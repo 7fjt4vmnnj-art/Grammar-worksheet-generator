@@ -1,0 +1,679 @@
+import type { Difficulty } from "../types";
+import { NAMES } from "./names";
+import { BAND, choicePattern, pattern, type Pattern } from "./engine";
+
+function rowsOf(rows: unknown): Array<[string, string, string[], string?]> {
+  return rows as Array<[string, string, string[], string?]>;
+}
+
+const dev: Difficulty[] = ["developing"];
+const prof: Difficulty[] = ["proficient"];
+const adv: Difficulty[] = ["advanced"];
+
+export const nounPatterns: Pattern[] = [
+  choicePattern(
+    "noun-proper",
+    BAND.all,
+    "Which word or phrase is a proper noun?",
+    rowsOf([
+      ["The choir from Lincoln Middle School practiced in the gym before sunrise.", "Lincoln Middle School", ["choir", "gym", "sunrise"]],
+      ["Yesterday afternoon the student bought a novel at River Street Books.", "River Street Books", ["afternoon", "student", "novel"]],
+      ["Our class visited the Lincoln Memorial during the spring trip.", "Lincoln Memorial", ["class", "trip", "spring"]],
+      ["The museum on Harbor Avenue displays a fossil in a glass case.", "Harbor Avenue", ["museum", "fossil", "case"]],
+      ["A poet from Nigeria read a new poem at the assembly.", "Nigeria", ["poet", "poem", "assembly"]],
+      ["The play about Harriet Tubman opens in the auditorium this month.", "Harriet Tubman", ["play", "auditorium", "month"]],
+      ["Students in Denver collected coats for the shelter.", "Denver", ["Students", "coats", "shelter"]],
+      ["The article in the Oakdale Times describes a bridge after the storm.", "Oakdale Times", ["article", "bridge", "storm"]],
+      ["The students studied Jupiter with a simple telescope on a clear evening.", "Jupiter", ["students", "telescope", "evening"]],
+      ["Coach Rahman posted the roster on the door before practice.", "Coach Rahman", ["roster", "door", "practice"]],
+      ["The hike along the Appalachian Trail starts at the parking lot at dawn.", "Appalachian Trail", ["hike", "lot", "dawn"]],
+      ["A painting by Frida Kahlo hangs near the staircase in soft light.", "Frida Kahlo", ["painting", "staircase", "light"]],
+      ["The science club toured the Pacific Ocean exhibit after lunch.", "Pacific Ocean", ["club", "exhibit", "lunch"]],
+      ["A letter from Aunt Rosa arrived at the house by the lake.", "Aunt Rosa", ["letter", "house", "lake"]],
+    ]).map(([stimulus, answer, distractors]) => ({
+      levels: [...dev, ...prof, ...adv],
+      stimulus,
+      answer,
+      distractors,
+      explanation: `${answer} names a specific person, place, or thing, so it is a proper noun. The other choices are common nouns.`,
+    })),
+  ),
+  choicePattern(
+    "noun-abstract",
+    BAND.all,
+    "Which word is an abstract noun?",
+    rowsOf([
+      ["Honesty mattered more to the crowd than the trophy on the table.", "Honesty", ["crowd", "trophy", "table"]],
+      ["Her curiosity kept her in the library among the books and lamps.", "curiosity", ["library", "books", "lamps"]],
+      ["Freedom is what the character wants in the novel on the desk.", "Freedom", ["character", "novel", "desk"]],
+      ["Their friendship began beside the lockers, where a photograph hung in the hallway.", "friendship", ["lockers", "photograph", "hallway"]],
+      ["Courage helped the firefighter carry the hose into the building.", "Courage", ["firefighter", "hose", "building"]],
+      ["The jury debated justice while the clock ticked in the courtroom.", "justice", ["jury", "clock", "courtroom"]],
+      ["Grief sat with the family among the chairs in the kitchen.", "Grief", ["family", "chairs", "kitchen"]],
+      ["Patience mattered as much as the beaker, the thermometer, and the table.", "Patience", ["beaker", "thermometer", "table"]],
+      ["Knowledge from the textbook filled her notebook with diagrams.", "Knowledge", ["textbook", "notebook", "diagrams"]],
+      ["The soldiers remembered loyalty as they crossed the bridge over the river.", "loyalty", ["soldiers", "bridge", "river"]],
+      ["Beauty in the canyon surprised the hikers with cameras.", "Beauty", ["canyon", "hikers", "cameras"]],
+      ["Hope returned when the letter reached the cabin by the lake.", "Hope", ["letter", "cabin", "lake"]],
+      ["The speech praised kindness and pointed to the mural, the garden, and the bench.", "kindness", ["mural", "garden", "bench"]],
+      ["Silence filled the theater after the last note left the violin.", "Silence", ["theater", "note", "violin"]],
+    ]).map(([stimulus, answer, distractors]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation: `${answer} names an idea, feeling, or quality that cannot be touched, so it is abstract. The other choices name people, places, or things.`,
+    })),
+  ),
+  choicePattern(
+    "noun-collective",
+    BAND.all,
+    "Which word is a collective noun?",
+    rowsOf([
+      ["The choir practiced a song beside the piano in the gym.", "choir", ["song", "piano", "gym"]],
+      ["A flock of geese crossed the field under a gray sky.", "flock", ["geese", "field", "sky"]],
+      ["The committee posted its decision on the bulletin board by the door.", "committee", ["decision", "board", "door"]],
+      ["Our team carried the banner through the parade and into the stadium.", "team", ["banner", "parade", "stadium"]],
+      ["The jury requested a transcript and a pitcher of water from the clerk.", "jury", ["transcript", "pitcher", "clerk"]],
+      ["A swarm of bees left the hive in the garden.", "swarm", ["bees", "hive", "garden"]],
+      ["The orchestra tuned the violins beside the chairs in the pit.", "orchestra", ["violins", "chairs", "pit"]],
+      ["That bunch of keys opened the cabinet but not the lock.", "bunch", ["keys", "cabinet", "lock"]],
+      ["The staff planned a picnic for the students in the park.", "staff", ["picnic", "students", "park"]],
+      ["A herd of deer moved through the meadow toward the fence.", "herd", ["deer", "meadow", "fence"]],
+      ["The audience tossed roses onto the stage when the curtain rose.", "audience", ["roses", "stage", "curtain"]],
+      ["The class designed a mural for the hallway with leftover paint.", "class", ["mural", "hallway", "paint"]],
+      ["The crew rolled the backdrop across the stage.", "crew", ["backdrop", "stage", "floor"]],
+      ["A panel of judges scored the debate in the library.", "panel", ["judges", "debate", "library"]],
+    ]).map(([stimulus, answer, distractors]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation: `${answer.charAt(0).toUpperCase() + answer.slice(1)} names a group acting as one unit, so it is a collective noun.`,
+    })),
+  ),
+  choicePattern(
+    "noun-label",
+    BAND.all,
+    "How should the italicized noun be labeled?",
+    rowsOf([
+      ["The *trophy* gleamed on the top shelf.", "common concrete", ["common abstract", "proper concrete", "proper abstract"], "Trophy is a common noun because it does not name one specific trophy, and it is concrete because a trophy can be touched."],
+      ["Her *honesty* impressed the coach during tryouts.", "common abstract", ["common concrete", "proper concrete", "proper abstract"], "Honesty names a quality, so it is abstract, and it is not the name of a particular person or place."],
+      ["*Maya* carried the microscope to the lab.", "proper concrete", ["common concrete", "common abstract", "proper abstract"], "Maya names a particular person, so it is proper, and a person is concrete."],
+      ["The class visited the *Lincoln Memorial* in the rain.", "proper concrete", ["common concrete", "common abstract", "proper abstract"], "Lincoln Memorial names a specific place, so it is a proper concrete noun."],
+      ["*Courage* helped the firefighter enter the building.", "common abstract", ["common concrete", "proper concrete", "proper abstract"], "Courage names a quality rather than a physical object."],
+      ["The *beaker* cracked in the sink.", "common concrete", ["common abstract", "proper concrete", "proper abstract"], "Beaker is a general name for a physical object."],
+      ["*Denver* collected a record snowfall in April.", "proper concrete", ["common concrete", "common abstract", "proper abstract"], "Denver names a particular city."],
+      ["Their *friendship* began beside the lockers.", "common abstract", ["common concrete", "proper concrete", "proper abstract"], "Friendship names a relationship, not an object that can be touched."],
+      ["A *flock* of geese crossed the muddy field.", "common concrete", ["common abstract", "proper concrete", "proper abstract"], "Flock is a general name for a group that can be seen, so it is a common concrete noun. It is also collective."],
+      ["The poem explored *grief* after the storm.", "common abstract", ["common concrete", "proper concrete", "proper abstract"], "Grief names an emotion."],
+      ["*Coach Rahman* posted the roster before practice.", "proper concrete", ["common concrete", "common abstract", "proper abstract"], "Coach Rahman names a particular person."],
+      ["The *key* opened the cabinet in the hall.", "common concrete", ["common abstract", "proper concrete", "proper abstract"], "Key is a general name for a physical object."],
+      ["*Jupiter* appeared above the gym roof.", "proper concrete", ["common concrete", "common abstract", "proper abstract"], "Jupiter names a particular planet."],
+      ["The editorial defended *justice* for the workers.", "common abstract", ["common concrete", "proper concrete", "proper abstract"], "Justice names an idea."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+  pattern({
+    id: "noun-two-abstract",
+    difficulties: BAND.upper,
+    type: "identify",
+    prompt: "Write the two abstract nouns in the sentence.",
+    build: (rng) => {
+      const rows = [
+        ["The medal stood for courage and loyalty.", "courage and loyalty", "Courage and loyalty name qualities. Medal names an object."],
+        ["In the courtroom, truth and justice mattered more than the clock.", "truth and justice", "Truth and justice name ideas. Courtroom and clock name places and things."],
+        ["The letter offered hope and comfort to the family in the cabin.", "hope and comfort", "Hope and comfort name feelings. Letter, family, and cabin do not."],
+        ["Their freedom and dignity mattered more than the trophy.", "freedom and dignity", "Freedom and dignity name ideas. Trophy names an object."],
+        ["The speech linked kindness with courage and pointed to the mural.", "kindness and courage", "Kindness and courage name qualities. Speech and mural name things."],
+        ["Silence and wonder filled the canyon after sunset.", "Silence and wonder", "Silence and wonder name conditions or feelings. Canyon names a place."],
+        ["The diary recorded grief and gratitude beside a pressed flower.", "grief and gratitude", "Grief and gratitude name feelings. Diary and flower name objects."],
+        ["Knowledge and patience guided the students through the lab.", "Knowledge and patience", "Knowledge and patience name qualities. Students and lab name people and a place."],
+        ["The treaty promised peace and independence to the valley.", "peace and independence", "Peace and independence name conditions. Treaty and valley name a document and a place."],
+        ["Honor and duty kept the sailors on the deck during the storm.", "Honor and duty", "Honor and duty name ideas. Sailors, deck, and storm name people, a place, and an event."],
+        ["The review praised originality and clarity in the short film.", "originality and clarity", "Originality and clarity name qualities. Review and film name things."],
+        ["Fear and curiosity pulled the hikers toward the cave.", "Fear and curiosity", "Fear and curiosity name feelings. Hikers and cave name people and a place."],
+      ] as const;
+      const [stimulus, answer, explanation] = rng.pick(rows);
+      return { stimulus, answer, explanation, key: stimulus };
+    },
+  }),
+];
+
+function pronounBank() {
+  return [
+    { sentence: "The hikers packed *their* lunches before sunrise.", word: "their", plain: "The hikers packed their lunches before sunrise.", type: "possessive", why: "Their shows ownership and modifies lunches.", others: ["personal", "reflexive", "relative"], decoys: ["hikers", "lunches", "sunrise"] },
+    { sentence: "Aisha reminded *herself* to submit the essay.", word: "herself", plain: "Aisha reminded herself to submit the essay.", type: "reflexive", why: "Herself refers back to Aisha, the same person who did the reminding.", others: ["personal", "possessive", "indefinite"], decoys: ["Aisha", "essay", "reminded"] },
+    { sentence: "*Someone* left a trumpet in the band room.", word: "Someone", plain: "Someone left a trumpet in the band room.", type: "indefinite", why: "Someone refers to an unnamed person.", others: ["personal", "demonstrative", "relative"], decoys: ["trumpet", "band", "room"] },
+    { sentence: "*These* sketches won a prize at the art show.", word: "These", plain: "These sketches won a prize at the art show.", type: "demonstrative", why: "These points out specific sketches.", others: ["relative", "indefinite", "reflexive"], decoys: ["sketches", "prize", "show"] },
+    { sentence: "The mural *that* won the prize hangs in the lobby.", word: "that", plain: "The mural that won the prize hangs in the lobby.", type: "relative", why: "That introduces a clause describing mural.", others: ["demonstrative", "personal", "indefinite"], decoys: ["mural", "prize", "lobby"] },
+    { sentence: "*They* carried the risers into the gym.", word: "They", plain: "They carried the risers into the gym.", type: "personal", why: "They stands in for a plural noun naming people or things.", others: ["possessive", "reflexive", "indefinite"], decoys: ["carried", "risers", "gym"] },
+    { sentence: "The lab lost *its* only thermometer.", word: "its", plain: "The lab lost its only thermometer.", type: "possessive", why: "Its shows that the thermometer belongs to the lab.", others: ["personal", "indefinite", "relative"], decoys: ["lab", "thermometer", "only"] },
+    { sentence: "Noah taught *himself* the opening measure.", word: "himself", plain: "Noah taught himself the opening measure.", type: "reflexive", why: "Himself refers back to Noah, the subject of taught.", others: ["personal", "possessive", "demonstrative"], decoys: ["Noah", "measure", "opening"] },
+    { sentence: "*Nobody* signed the attendance sheet.", word: "Nobody", plain: "Nobody signed the attendance sheet.", type: "indefinite", why: "Nobody does not name a particular person.", others: ["personal", "demonstrative", "relative"], decoys: ["attendance", "sheet", "signed"] },
+    { sentence: "Please hand me *those* folders.", word: "those", plain: "Please hand me those folders.", type: "demonstrative", why: "Those points to specific folders.", others: ["relative", "possessive", "indefinite"], decoys: ["hand", "folders", "Please"] },
+    { sentence: "The coach *who* scheduled the match is absent.", word: "who", plain: "The coach who scheduled the match is absent.", type: "relative", why: "Who relates the clause scheduled the match to coach.", others: ["personal", "indefinite", "demonstrative"], decoys: ["coach", "match", "absent"] },
+    { sentence: "*We* revised the ending after class.", word: "We", plain: "We revised the ending after class.", type: "personal", why: "We is a personal pronoun used as the subject.", others: ["possessive", "reflexive", "indefinite"], decoys: ["ending", "class", "revised"] },
+    { sentence: "The students finished the posters by *themselves*.", word: "themselves", plain: "The students finished the posters by themselves.", type: "reflexive", why: "Themselves refers back to the students.", others: ["personal", "possessive", "relative"], decoys: ["students", "posters", "finished"] },
+    { sentence: "*Each* of the beakers has a label.", word: "Each", plain: "Each of the beakers has a label.", type: "indefinite", why: "Each refers to one nonspecific member of a group.", others: ["demonstrative", "relative", "reflexive"], decoys: ["beakers", "label", "has"] },
+    { sentence: "The notebook on the desk is *mine*.", word: "mine", plain: "The notebook on the desk is mine.", type: "possessive", why: "Mine is a possessive pronoun that stands alone and shows ownership.", others: ["personal", "demonstrative", "relative"], decoys: ["notebook", "desk", "is"] },
+    { sentence: "*This* beaker belongs in the acid cabinet.", word: "This", plain: "This beaker belongs in the acid cabinet.", type: "demonstrative", why: "This points to a specific beaker.", others: ["relative", "indefinite", "personal"], decoys: ["beaker", "acid", "cabinet"] },
+    { sentence: "The trail *which* we followed ended at the ridge.", word: "which", plain: "The trail which we followed ended at the ridge.", type: "relative", why: "Which introduces a clause describing trail.", others: ["demonstrative", "personal", "indefinite"], decoys: ["trail", "ridge", "followed"] },
+    { sentence: "Give the extra script to *her*.", word: "her", plain: "Give the extra script to her.", type: "personal", why: "Her is an object pronoun taking the place of a noun after the preposition to.", others: ["possessive", "reflexive", "demonstrative"], decoys: ["script", "extra", "Give"] },
+    { sentence: "*Few* of the tickets remain for Friday.", word: "Few", plain: "Few of the tickets remain for Friday.", type: "indefinite", why: "Few refers to a small, unspecified number.", others: ["demonstrative", "relative", "personal"], decoys: ["tickets", "Friday", "remain"] },
+    { sentence: "The chorus congratulated *itself* after the encore.", word: "itself", plain: "The chorus congratulated itself after the encore.", type: "reflexive", why: "Itself refers back to the chorus.", others: ["personal", "possessive", "indefinite"], decoys: ["chorus", "encore", "congratulated"] },
+  ];
+}
+
+export const pronounPatterns: Pattern[] = [
+  pattern({
+    id: "pronoun-spot",
+    difficulties: BAND.core,
+    type: "multiple-choice",
+    prompt: "Which word is a pronoun?",
+    build: (rng) => {
+      const row = rng.pick(pronounBank());
+      return {
+        stimulus: row.plain,
+        answer: row.word,
+        distractors: row.decoys,
+        explanation: `${row.word} is a ${row.type} pronoun. ${row.why}`,
+        key: `spot|${row.plain}`,
+      };
+    },
+  }),
+  pattern({
+    id: "pronoun-type",
+    difficulties: BAND.all,
+    type: "multiple-choice",
+    prompt: "The italicized word is which kind of pronoun?",
+    build: (rng) => {
+      const row = rng.pick(pronounBank());
+      return {
+        stimulus: row.sentence,
+        answer: row.type,
+        distractors: row.others,
+        explanation: `${row.why}`,
+        key: `type|${row.sentence}`,
+      };
+    },
+  }),
+  pattern({
+    id: "pronoun-replace",
+    difficulties: BAND.all,
+    type: "rewrite",
+    prompt: "Rewrite the second sentence, replacing the repeated noun with a personal pronoun.",
+    lines: 2,
+    build: (rng) => {
+      const rows = [
+        ["The beakers are clean.", "Please return the beakers to the cart.", "Please return them to the cart.", "Beakers is plural, so the object pronoun is them."],
+        ["The backdrop is still wet.", "Leave the backdrop on the stage.", "Leave it on the stage.", "Backdrop is singular, so the object pronoun is it."],
+        ["The tickets are on the table.", "Count the tickets before the doors open.", "Count them before the doors open.", "Tickets is plural, so use them."],
+        ["The microphone is live.", "Test the microphone before the speech.", "Test it before the speech.", "Microphone is singular, so use it."],
+        ["The folders are labeled.", "Carry the folders to room 12.", "Carry them to room 12.", "Folders is plural, so use them."],
+        ["The mural is finished.", "Photograph the mural before sunset.", "Photograph it before sunset.", "Mural is singular, so use it."],
+        ["The students have their passes.", "Walk the students to the auditorium.", "Walk them to the auditorium.", "Students is plural, so use them."],
+        ["The violin is out of tune.", "Tune the violin before the cue.", "Tune it before the cue.", "Violin is singular, so use it."],
+        ["The maps are outdated.", "Replace the maps in the folder.", "Replace them in the folder.", "Maps is plural, so use them."],
+        ["The greenhouse is unlocked.", "Lock the greenhouse after class.", "Lock it after class.", "Greenhouse is singular, so use it."],
+        ["The chairs are stacked.", "Move the chairs off the stage.", "Move them off the stage.", "Chairs is plural, so use them."],
+        ["The essay is too long.", "Shorten the essay by one paragraph.", "Shorten it by one paragraph.", "Essay is singular, so use it."],
+      ] as const;
+      const [first, second, answer, why] = rng.pick(rows);
+      return {
+        stimulus: `${first} ${second}`,
+        answer,
+        explanation: `${why} Answers may vary only in wording that keeps this pronoun and meaning.`,
+        key: second,
+      };
+    },
+  }),
+  choicePattern(
+    "pronoun-case-preview",
+    BAND.upper,
+    "The italicized pronoun is which type?",
+    rowsOf([
+      ["The scientist *whose* notes we copied is speaking today.", "relative", ["possessive", "indefinite", "demonstrative"], "Whose relates the clause we copied to scientist and shows possession, so it is a relative pronoun here."],
+      ["*Whatever* you decide, label the samples tonight.", "indefinite", ["relative", "demonstrative", "reflexive"], "Whatever does not point to one specific choice already named, so it is indefinite."],
+      ["The researchers surprised *themselves* with the result.", "reflexive", ["personal", "possessive", "relative"], "Themselves refers back to the researchers, the same people who did the surprising."],
+      ["*Those* are the slides from yesterday's lab.", "demonstrative", ["relative", "indefinite", "reflexive"], "Those points to specific slides."],
+      ["*Everyone* in the lobby needs a pass.", "indefinite", ["relative", "personal", "demonstrative"], "Everyone refers to all people in a group without naming them, so it is indefinite."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+];
+
+export const verbPatterns: Pattern[] = [
+  choicePattern(
+    "verb-kind",
+    BAND.all,
+    "The italicized verb is best labeled:",
+    rowsOf([
+      ["The soup *tasted* salty after the cook added pepper.", "linking", ["action", "helping"], "Tasted links the subject soup to the description salty. The soup is not performing an action on an object."],
+      ["Jordan *carried* the microscope to the lab.", "action", ["linking", "helping"], "Carried tells what Jordan did, so it is an action verb."],
+      ["Maya *has* finished the lab report.", "helping", ["action", "linking"], "Has helps the main verb finished. Together they form the verb phrase has finished."],
+      ["The audience *laughed* at the closing joke.", "action", ["linking", "helping"], "Laughed tells what the audience did."],
+      ["The garden *grew* quiet at dusk.", "linking", ["action", "helping"], "Grew links garden to quiet and means became. It does not show the garden growing plants."],
+      ["The old keys *were* rusty.", "linking", ["action", "helping"], "Were links keys to the description rusty."],
+      ["The dancers *are* rehearsing the finale.", "helping", ["action", "linking"], "Are helps rehearsing. The main verb is rehearsing."],
+      ["We *should* revise the ending before Friday.", "helping", ["action", "linking"], "Should is a modal helping verb before the main verb revise."],
+      ["The bell *rang* at noon.", "action", ["linking", "helping"], "Rang shows the action of the bell."],
+      ["The director *seemed* tired during rehearsal.", "linking", ["action", "helping"], "Seemed links director to the description tired."],
+      ["The class *wrote* letters to the editor.", "action", ["linking", "helping"], "Wrote tells what the class did."],
+      ["The partners *have* checked every calculation.", "helping", ["action", "linking"], "Have helps the main verb checked."],
+      ["The hallway *smelled* of fresh paint.", "linking", ["action", "helping"], "Smelled links hallway to the description of fresh paint."],
+      ["Please *remain* seated until the curtain falls.", "linking", ["action", "helping"], "Remain links the understood subject you to seated."],
+      ["The chef *tasted* the soup before serving it.", "action", ["linking", "helping"], "Here tasted shows an action the chef performed on the soup, which is the direct object."],
+      ["The soup *tasted* burnt.", "linking", ["action", "helping"], "Tasted links soup to burnt. There is no direct object."],
+      ["The director *grew* tomatoes behind the school.", "action", ["linking", "helping"], "Grew tells what the director cultivated. Tomatoes is the direct object."],
+      ["The director *grew* impatient with the delay.", "linking", ["action", "helping"], "Grew links director to impatient and means became."],
+      ["The diagram *looks* crowded.", "linking", ["action", "helping"], "Looks links diagram to the description crowded."],
+      ["*Look* at the diagram before you answer.", "action", ["linking", "helping"], "Look tells the listener what action to perform. At the diagram is a prepositional phrase, not a subject complement."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      levels: stimulus.includes("chef") || stimulus.includes("tomatoes") || stimulus.includes("impatient") || stimulus.includes("diagram") || stimulus.includes("burnt") ? [...prof, ...adv] : undefined,
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+  choicePattern(
+    "verb-transitive",
+    BAND.all,
+    "Is the italicized action verb transitive or intransitive?",
+    rowsOf([
+      ["Jordan *carried* the microscope to the lab.", "transitive", ["intransitive"], "The verb has a direct object, microscope, so it is transitive."],
+      ["The audience *laughed*.", "intransitive", ["transitive"], "Laughed has no direct object, so it is intransitive."],
+      ["The class *wrote* letters to the editor.", "transitive", ["intransitive"], "Letters receives the action of wrote."],
+      ["The bell *rang* at noon.", "intransitive", ["transitive"], "At noon is a prepositional phrase, not a direct object."],
+      ["Lena *repaired* the cracked beaker.", "transitive", ["intransitive"], "Beaker is the direct object of repaired."],
+      ["The visitors *arrived* before the first bell.", "intransitive", ["transitive"], "Arrived has no direct object."],
+      ["The crew *built* a new backdrop.", "transitive", ["intransitive"], "Backdrop is the direct object of built."],
+      ["The candle *flickered* in the draft.", "intransitive", ["transitive"], "In the draft tells where, but it is not a direct object."],
+      ["Priya *answered* the question calmly.", "transitive", ["intransitive"], "Question is the direct object of answered."],
+      ["The whole gym *cheered*.", "intransitive", ["transitive"], "Cheered has no direct object in this sentence."],
+      ["Omar *pushed* the cart into the hall.", "transitive", ["intransitive"], "Cart is the direct object of pushed."],
+      ["The temperature *fell* overnight.", "intransitive", ["transitive"], "Fell has no direct object."],
+      ["The editor *cut* two paragraphs.", "transitive", ["intransitive"], "Paragraphs is the direct object of cut."],
+      ["A hush *descended* on the theater.", "intransitive", ["transitive"], "On the theater is a prepositional phrase, not a direct object."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+  pattern({
+    id: "verb-helping-write",
+    difficulties: BAND.all,
+    type: "identify",
+    prompt: "Write the helping verb. Do not write the main verb.",
+    build: (rng) => {
+      const rows = [
+        ["Maya *has finished* the lab report.", "has", "Has helps the main verb finished."],
+        ["The dancers *are rehearsing* the finale.", "are", "Are helps the main verb rehearsing."],
+        ["We *should revise* the ending.", "should", "Should is the modal helping verb; revise is the main verb."],
+        ["The partners *have checked* every calculation.", "have", "Have helps checked."],
+        ["The curtain *will rise* at seven.", "will", "Will helps the main verb rise."],
+        ["Imani *was painting* the backdrop.", "was", "Was helps the main verb painting."],
+        ["The samples *must stay* on ice.", "must", "Must helps the main verb stay."],
+        ["They *had left* before the speech.", "had", "Had helps the main verb left."],
+        ["You *can borrow* the camera.", "can", "Can helps the main verb borrow."],
+        ["The choir *is learning* the harmony.", "is", "Is helps the main verb learning."],
+        ["Noah *does know* the cue.", "does", "Does helps the main verb know in this emphatic verb phrase."],
+        ["The doors *were locked* at dusk.", "were", "Were helps the main verb locked in the passive verb phrase."],
+      ] as const;
+      const [stimulus, answer, explanation] = rng.pick(rows);
+      return { stimulus, answer, explanation, key: stimulus };
+    },
+  }),
+];
+
+export const adjectiveAdverbPatterns: Pattern[] = [
+  choicePattern(
+    "adj-adv-choice",
+    BAND.all,
+    "Choose the adjective or adverb that correctly completes the sentence.",
+    rowsOf([
+      ["Maya sang the solo (beautiful / beautifully).", "beautifully", ["beautiful"], "Beautifully is an adverb modifying the action verb sang."],
+      ["The solo sounded (beautiful / beautifully).", "beautiful", ["beautifully"], "Sounded is a linking verb. Beautiful is a predicate adjective describing solo."],
+      ["Measure the solution (careful / carefully).", "carefully", ["careful"], "Carefully modifies the action verb measure."],
+      ["The surgeon's notes were (careful / carefully).", "careful", ["carefully"], "Were links notes to the adjective careful."],
+      ["Kai closed the door (quiet / quietly).", "quietly", ["quiet"], "Quietly modifies the action verb closed."],
+      ["The hallway seemed (quiet / quietly) after the bell.", "quiet", ["quietly"], "Seemed is linking. Quiet describes hallway."],
+      ["Elena explained the thesis (clear / clearly).", "clearly", ["clear"], "Clearly modifies the action verb explained."],
+      ["The thesis was (clear / clearly).", "clear", ["clearly"], "Was links thesis to the adjective clear."],
+      ["The substitute waited (patient / patiently) for the class to settle.", "patiently", ["patient"], "Patiently modifies the action verb waited."],
+      ["The substitute seemed (patient / patiently).", "patient", ["patiently"], "Seemed links substitute to the adjective patient."],
+      ["The diver landed (graceful / gracefully).", "gracefully", ["graceful"], "Gracefully modifies the action verb landed."],
+      ["The landing looked (graceful / gracefully).", "graceful", ["gracefully"], "Looked is linking. Graceful describes landing."],
+      ["Arjun stated the claim (bold / boldly).", "boldly", ["bold"], "Boldly modifies the action verb stated."],
+      ["The claim sounded (bold / boldly).", "bold", ["boldly"], "Sounded links claim to the adjective bold."],
+      ["Copy the formula (accurate / accurately).", "accurately", ["accurate"], "Accurately modifies the action verb copy."],
+      ["The formula is (accurate / accurately).", "accurate", ["accurately"], "Is links formula to the adjective accurate."],
+      ["The director spoke (sharp / sharply) to the latecomers.", "sharply", ["sharp"], "Sharply modifies the action verb spoke."],
+      ["Her reply was (sharp / sharply) but fair.", "sharp", ["sharply"], "Was links reply to the adjective sharp."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+  choicePattern(
+    "adj-adv-degree",
+    BAND.all,
+    "The italicized word is which degree of comparison?",
+    rowsOf([
+      ["This solo is *long*.", "positive", ["comparative", "superlative"], "Long makes no comparison, so it is the positive degree."],
+      ["This solo is *longer* than the first one.", "comparative", ["positive", "superlative"], "Longer compares two solos, so it is comparative."],
+      ["This is the *longest* solo in the concert.", "superlative", ["positive", "comparative"], "Longest compares this solo with every solo in the concert, so it is superlative."],
+      ["The trail is *steep*.", "positive", ["comparative", "superlative"], "Steep does not compare the trail with another trail."],
+      ["The ridge trail is *steeper* than the creek trail.", "comparative", ["positive", "superlative"], "Steeper compares exactly two trails."],
+      ["The ridge trail is the *steepest* of the three routes.", "superlative", ["positive", "comparative"], "Steepest compares more than two routes."],
+      ["Her argument is *strong*.", "positive", ["comparative", "superlative"], "Strong is the base form."],
+      ["Her argument is *stronger* than mine.", "comparative", ["positive", "superlative"], "Stronger compares two arguments."],
+      ["Her argument is the *strongest* in the debate.", "superlative", ["positive", "comparative"], "Strongest compares one argument with all the others in the debate."],
+      ["The hallway was *quiet*.", "positive", ["comparative", "superlative"], "Quiet is the base form."],
+      ["This hallway is *quieter* than the gym.", "comparative", ["positive", "superlative"], "Quieter compares two places."],
+      ["The library is the *quietest* room in the building.", "superlative", ["positive", "comparative"], "Quietest compares the library with every room in the building."],
+      ["The solution is *clear*.", "positive", ["comparative", "superlative"], "Clear is the base form."],
+      ["This draft is *clearer* than the first draft.", "comparative", ["positive", "superlative"], "Clearer compares two drafts."],
+      ["This is the *clearest* of the four drafts.", "superlative", ["positive", "comparative"], "Clearest compares more than two drafts."],
+      ["A *good* thesis is specific.", "positive", ["comparative", "superlative"], "Good is the positive degree of this irregular adjective."],
+      ["This thesis is *better* than the earlier one.", "comparative", ["positive", "superlative"], "Better is the comparative form of good. It compares two theses."],
+      ["This is the *best* thesis in the set.", "superlative", ["positive", "comparative"], "Best is the superlative form of good."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+  pattern({
+    id: "adj-or-adv-label",
+    difficulties: BAND.upper,
+    type: "multiple-choice",
+    prompt: "Is the italicized word an adjective or an adverb in this sentence?",
+    build: (rng) => {
+      const rows = [
+        ["The *careful* notes saved the lab group.", "adjective", "Careful modifies the noun notes."],
+        ["The group worked *carefully* through the procedure.", "adverb", "Carefully modifies the verb worked."],
+        ["We took the *early* bus.", "adjective", "Early modifies the noun bus."],
+        ["We arrived *early*.", "adverb", "Early modifies the verb arrived."],
+        ["It was a *fast* current.", "adjective", "Fast modifies the noun current."],
+        ["The current moved *fast*.", "adverb", "Fast modifies the verb moved. Fast can be an adverb without an -ly ending."],
+        ["She gave a *daily* report.", "adjective", "Daily modifies the noun report."],
+        ["She reported *daily*.", "adverb", "Daily modifies the verb reported."],
+        ["It was a *sudden* decision.", "adjective", "Sudden modifies the noun decision."],
+        ["The alarm stopped *suddenly*.", "adverb", "Suddenly modifies the verb stopped."],
+      ] as const;
+      const [stimulus, answer, explanation] = rng.pick(rows);
+      const distractors = answer === "adjective" ? ["adverb"] : ["adjective"];
+      return { stimulus, answer, distractors, explanation, key: stimulus };
+    },
+  }),
+];
+
+export const prepositionPatterns: Pattern[] = [
+  choicePattern(
+    "prep-word",
+    BAND.all,
+    "Which word is a preposition?",
+    rowsOf([
+      ["The notebook on the desk belongs to the library.", "on", ["notebook", "belongs", "library"]],
+      ["We waited beside the stage door.", "beside", ["waited", "stage", "door"]],
+      ["A crack ran across the beaker.", "across", ["crack", "ran", "beaker"]],
+      ["The key is under the mat.", "under", ["key", "is", "mat"]],
+      ["Students gathered near the trophy case.", "near", ["Students", "gathered", "case"]],
+      ["The path winds through the meadow.", "through", ["path", "winds", "meadow"]],
+      ["Hang the poster above the sink.", "above", ["Hang", "poster", "sink"]],
+      ["The letter from Aunt Rosa arrived today.", "from", ["letter", "arrived", "today"]],
+      ["We walked toward the auditorium.", "toward", ["walked", "auditorium", "We"]],
+      ["Leave the samples inside the cabinet.", "inside", ["Leave", "samples", "cabinet"]],
+      ["The mural stands between the two windows.", "between", ["mural", "stands", "windows"]],
+      ["A hush fell over the crowd.", "over", ["hush", "fell", "crowd"]],
+      ["The notes are beneath the keyboard.", "beneath", ["notes", "are", "keyboard"]],
+      ["They hiked along the ridge.", "along", ["hiked", "ridge", "They"]],
+    ]).map(([stimulus, answer, distractors]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation: `${answer} relates its object to another word in the sentence, so it is a preposition.`,
+    })),
+  ),
+  choicePattern(
+    "prep-phrase",
+    BAND.all,
+    "Which group of words is a prepositional phrase?",
+    rowsOf([
+      ["The notebook on the desk is new.", "on the desk", ["The notebook", "is new", "notebook is"]],
+      ["We waited beside the stage door.", "beside the stage door", ["We waited", "stage door", "waited beside"]],
+      ["A crack ran across the beaker.", "across the beaker", ["A crack", "ran across", "the beaker ran"]],
+      ["Students gathered near the trophy case.", "near the trophy case", ["Students gathered", "the trophy", "gathered near"]],
+      ["The path winds through the meadow.", "through the meadow", ["The path", "winds through", "the meadow winds"]],
+      ["Hang the poster above the sink.", "above the sink", ["Hang the poster", "the poster above", "the sink"]],
+      ["We walked toward the auditorium.", "toward the auditorium", ["We walked", "walked toward", "the auditorium"]],
+      ["Leave the samples inside the cabinet.", "inside the cabinet", ["Leave the samples", "the samples", "cabinet inside"]],
+      ["The mural stands between the two windows.", "between the two windows", ["The mural stands", "the mural", "two windows stands"]],
+      ["The notes are beneath the keyboard.", "beneath the keyboard", ["The notes", "are beneath", "the keyboard are"]],
+      ["A hush fell over the crowd.", "over the crowd", ["A hush", "fell over", "the crowd fell"]],
+      ["They hiked along the ridge.", "along the ridge", ["They hiked", "the ridge", "hiked along"]],
+    ]).map(([stimulus, answer, distractors]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation: `${answer} begins with a preposition and ends with its object, so the whole group is a prepositional phrase.`,
+    })),
+  ),
+  choicePattern(
+    "prep-complete",
+    BAND.core,
+    "Choose the preposition that best completes the sentence.",
+    rowsOf([
+      ["The appointment is ___ Friday ___ three o'clock.", "on ... at", ["in ... on", "at ... in", "by ... of"], "Use on with a day and at with a clock time."],
+      ["We have rehearsal ___ the evening ___ Thursday.", "in ... on", ["at ... in", "on ... at", "of ... by"], "Use in with a part of the day and on with a specific day."],
+      ["The beaker is ___ the cabinet ___ the sink.", "in ... beside", ["beside ... during", "among ... into", "without ... since"], "In tells where the beaker is contained, and beside tells the cabinet's position next to the sink."],
+      ["Share the extra copies ___ the two partners.", "between", ["among", "into", "during"], "Use between for two people."],
+      ["Share the extra copies ___ the four partners.", "among", ["between", "inside", "off"], "Use among when the group has three or more."],
+      ["The bus leaves ___ dawn.", "at", ["on", "in", "of"], "Use at with a specific point in time such as dawn or noon."],
+      ["The project is due ___ April.", "in", ["on", "at", "into"], "Use in with a month."],
+      ["The project is due ___ April 12.", "on", ["in", "at", "by the"], "Use on with a specific date."],
+      ["They walked ___ the bridge and ___ the museum.", "across ... toward", ["among ... at", "during ... of", "without ... since"], "Across and toward both show movement in relation to a place."],
+      ["The quotation came ___ the novel.", "from", ["of", "at", "off"], "From shows the source of the quotation."],
+      ["We met ___ the library ___ lunch.", "at ... after", ["in ... into", "on ... among", "of ... without"], "At names the place, and after names the time following lunch."],
+      ["The climbers went ___ the ridge ___ sunset.", "along ... before", ["between ... among", "of ... at the people", "without ... since the"], "Along shows the path, and before places the hike earlier than sunset."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+  choicePattern(
+    "prep-vs-conj",
+    BAND.upper,
+    "Is the italicized word a preposition or a subordinating conjunction?",
+    rowsOf([
+      ["We waited *until* sunset.", "preposition", ["subordinating conjunction"], "Until is a preposition here because its object, sunset, is a noun, not a clause."],
+      ["We waited *until* the sun set.", "subordinating conjunction", ["preposition"], "Until introduces the clause the sun set, so it is a subordinating conjunction."],
+      ["The choir rehearsed *after* lunch.", "preposition", ["subordinating conjunction"], "After lunch is a prepositional phrase. Lunch is a noun."],
+      ["The choir rehearsed *after* the bell rang.", "subordinating conjunction", ["preposition"], "After introduces the clause the bell rang."],
+      ["Everyone left *before* dusk.", "preposition", ["subordinating conjunction"], "Before dusk is a prepositional phrase."],
+      ["Everyone left *before* the speech ended.", "subordinating conjunction", ["preposition"], "Before introduces the clause the speech ended."],
+      ["We have lived here *since* June.", "preposition", ["subordinating conjunction"], "Since June is a prepositional phrase."],
+      ["We have lived here *since* the school opened.", "subordinating conjunction", ["preposition"], "Since introduces the clause the school opened."],
+      ["*After* the storm, the field was muddy.", "preposition", ["subordinating conjunction"], "After the storm is a prepositional phrase. Storm is a noun."],
+      ["*After* the storm passed, the field was muddy.", "subordinating conjunction", ["preposition"], "After introduces the clause the storm passed."],
+      ["They argued *until* midnight.", "preposition", ["subordinating conjunction"], "Until midnight is a prepositional phrase."],
+      ["They argued *until* the moderator stopped them.", "subordinating conjunction", ["preposition"], "Until introduces a clause with its own subject and verb."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+];
+
+export const conjunctionPatterns: Pattern[] = [
+  choicePattern(
+    "conj-type",
+    BAND.all,
+    "The italicized word or pair is which kind of conjunction?",
+    rowsOf([
+      ["The bell rang, *and* the hallway filled.", "coordinating", ["subordinating", "correlative"], "And is one of the coordinating conjunctions, often remembered as FANBOYS. It joins two independent clauses."],
+      ["We stayed inside *because* the field was muddy.", "subordinating", ["coordinating", "correlative"], "Because introduces a dependent clause and joins it to an independent clause."],
+      ["*Either* the lamp *or* the candles will be enough.", "correlative", ["coordinating", "subordinating"], "Either / or work as a pair, so they are correlative conjunctions."],
+      ["The lab was closed, *yet* the partners finished the report.", "coordinating", ["subordinating", "correlative"], "Yet is a coordinating conjunction joining two independent clauses."],
+      ["*Although* the trail was steep, the hikers kept going.", "subordinating", ["coordinating", "correlative"], "Although introduces a dependent clause."],
+      ["*Both* the editor *and* the designer approved the cover.", "correlative", ["coordinating", "subordinating"], "Both / and is a correlative pair."],
+      ["Bring a pencil, *or* borrow one from the front desk.", "coordinating", ["subordinating", "correlative"], "Or is a coordinating conjunction."],
+      ["*If* the paint is wet, leave the mural alone.", "subordinating", ["coordinating", "correlative"], "If introduces a condition, which is a dependent clause."],
+      ["*Neither* the soloist *nor* the accompanist missed the cue.", "correlative", ["coordinating", "subordinating"], "Neither / nor is a correlative pair."],
+      ["I studied the map, *but* the trail still confused me.", "coordinating", ["subordinating", "correlative"], "But is a coordinating conjunction showing contrast between two independent clauses."],
+      ["We started *when* the lights warmed up.", "subordinating", ["coordinating", "correlative"], "When introduces a dependent clause of time."],
+      ["The speech was *not only* clear *but also* persuasive.", "correlative", ["coordinating", "subordinating"], "Not only / but also is a correlative pair."],
+      ["The printer jammed, *so* Maya checked the paper tray.", "coordinating", ["subordinating", "correlative"], "So is a coordinating conjunction when it joins two independent clauses and means therefore."],
+      ["*Unless* the data are checked, do not publish the graph.", "subordinating", ["coordinating", "correlative"], "Unless introduces a dependent clause."],
+      ["*Whether* we win *or* lose, we will shake hands.", "correlative", ["coordinating", "subordinating"], "Whether / or is a correlative pair."],
+      ["The crew waited *until* the glue dried.", "subordinating", ["coordinating", "correlative"], "Until introduces the dependent clause the glue dried. In this sentence it is a subordinating conjunction, not a preposition."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+  choicePattern(
+    "conj-relationship",
+    BAND.all,
+    "Choose the conjunction that shows the relationship in parentheses.",
+    rowsOf([
+      ["The field was muddy, ____ we moved practice indoors. (result)", "so", ["but", "or", "yet"], "So shows that moving indoors was the result of the muddy field."],
+      ["The field was muddy, ____ we held practice anyway. (contrast)", "but", ["so", "or", "for"], "But shows contrast between the mud and the decision to practice."],
+      ["Bring a pencil, ____ you can borrow one. (choice)", "or", ["but", "so", "yet"], "Or presents a choice."],
+      ["We moved indoors ____ the field was muddy. (cause)", "because", ["although", "unless", "until"], "Because introduces the cause."],
+      ["We held practice ____ the field was muddy. (contrast)", "although", ["because", "unless", "so that"], "Although introduces a contrast or concession."],
+      ["Label every sample ____ you leave the lab. (time)", "before", ["unless", "although", "so"], "Before places labeling earlier than leaving."],
+      ["____ the paint is wet, do not touch the mural. (condition)", "If", ["So", "And", "Or"], "If introduces the condition."],
+      ["The graph is accurate ____ the labels are hard to read. (contrast)", "although", ["because", "unless", "so"], "Although concedes a problem without canceling the first claim."],
+      ["She revised the ending ____ the first draft felt rushed. (cause)", "because", ["although", "while", "unless"], "Because gives the reason for the revision."],
+      ["Wait here ____ the director calls your name. (time)", "until", ["unless", "although", "so"], "Until marks the time when the waiting should stop."],
+      ["____ Maya ____ Luis can operate the projector. (both included)", "Both ... and", ["Either ... or", "Neither ... nor", "Whether ... or"], "Both / and includes the two people together."],
+      ["____ the lamp ____ the candles will be enough. (one of the two)", "Either ... or", ["Both ... and", "Not only ... but also", "Whether ... but"], "Either / or offers a choice of one."],
+      ["The speech was ____ clear ____ persuasive. (both qualities)", "not only ... but also", ["either ... or", "neither ... nor", "whether ... or"], "Not only / but also emphasizes that both qualities are true."],
+      ["____ the soloist ____ the accompanist missed the cue. (negative pair)", "Neither ... nor", ["Both ... and", "Either ... or", "Not only ... but also"], "Neither / nor makes both parts negative."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+];
+
+export const interjectionPatterns: Pattern[] = [
+  choicePattern(
+    "interjection-spot",
+    BAND.all,
+    "Which word is an interjection?",
+    rowsOf([
+      ["Wow! The backdrop is enormous.", "Wow", ["backdrop", "is", "enormous"]],
+      ["Ouch! I stubbed my toe on the riser.", "Ouch", ["stubbed", "toe", "riser"]],
+      ["Oh, I left the calculator in the lab.", "Oh", ["left", "calculator", "lab"]],
+      ["Yikes! The beaker cracked in the sink.", "Yikes", ["beaker", "cracked", "sink"]],
+      ["Well, I can stay after school.", "Well", ["stay", "after", "school"]],
+      ["Alas, the last ticket is gone.", "Alas", ["last", "ticket", "gone"]],
+      ["Bravo! The encore was deserved.", "Bravo", ["encore", "was", "deserved"]],
+      ["Oops, I skipped a step in the procedure.", "Oops", ["skipped", "step", "procedure"]],
+      ["Hey, the bus is at the curb.", "Hey", ["bus", "curb", "is"]],
+      ["Hooray! The vote finally passed.", "Hooray", ["vote", "finally", "passed"]],
+      ["Ah, that is the note we were missing.", "Ah", ["note", "were", "missing"]],
+      ["Whoa! The current in this tank is stronger than it looks.", "Whoa", ["current", "tank", "stronger"]],
+      ["Goodness, the paint is already dry.", "Goodness", ["paint", "already", "dry"]],
+      ["Psst, the cue is coming up.", "Psst", ["cue", "coming", "up"]],
+    ]).map(([stimulus, answer, distractors]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation: `${answer} expresses feeling and is grammatically separate from the rest of the sentence, so it is an interjection.`,
+    })),
+  ),
+  choicePattern(
+    "interjection-punct",
+    BAND.all,
+    "What punctuation should follow the interjection?",
+    rowsOf([
+      ["Yikes___ The beaker cracked.", "exclamation point", ["comma", "semicolon", "colon"], "Yikes is a strong interjection, so it takes an exclamation point."],
+      ["Well___ I can stay after school.", "comma", ["exclamation point", "semicolon", "colon"], "Well is mild here, so a comma sets it off."],
+      ["Wow___ The backdrop is enormous.", "exclamation point", ["comma", "period", "colon"], "Wow expresses strong surprise."],
+      ["Oh___ I left the calculator in the lab.", "comma", ["exclamation point", "colon", "semicolon"], "Oh is mild in this sentence."],
+      ["Bravo___ The encore was deserved.", "exclamation point", ["comma", "colon", "period"], "Bravo is a strong burst of praise."],
+      ["Alas___ the last ticket is gone.", "comma", ["exclamation point", "semicolon", "colon"], "Alas is a mild expression of regret, traditionally set off with a comma."],
+      ["Ouch___ I stubbed my toe.", "exclamation point", ["comma", "colon", "semicolon"], "Ouch expresses sudden pain, so it is strong."],
+      ["Hey___ the bus is at the curb.", "comma", ["colon", "semicolon", "period"], "Hey is a mild call for attention here."],
+      ["Hooray___ The vote passed.", "exclamation point", ["comma", "colon", "semicolon"], "Hooray is strong excitement."],
+      ["Hmm___ the total still looks low.", "comma", ["exclamation point", "colon", "question mark"], "Hmm is a mild, thoughtful interjection."],
+      ["Whoa___ that current is fast.", "exclamation point", ["comma", "colon", "period"], "Whoa expresses a strong reaction."],
+      ["Ah___ that is the missing note.", "comma", ["semicolon", "colon", "question mark"], "Ah is mild when it marks a quiet realization."],
+    ]).map(([stimulus, answer, distractors, explanation]) => ({
+      stimulus,
+      answer,
+      distractors,
+      explanation,
+    })),
+  ),
+  pattern({
+    id: "interjection-fit",
+    difficulties: BAND.all,
+    type: "multiple-choice",
+    prompt: "Choose the interjection that fits the situation.",
+    build: (rng) => {
+      const rows = [
+        ["____! I just closed the cabinet on my finger.", "Ouch", ["Bravo", "Alas", "Hello"], "Ouch fits sudden pain."],
+        ["____! The set design looks incredible from the back row.", "Wow", ["Oops", "Ahem", "Goodbye"], "Wow fits impressed surprise."],
+        ["____, I subtracted the mass instead of adding it.", "Oops", ["Hooray", "Bravo", "Psst"], "Oops fits a mistake."],
+        ["____! You nailed the final measure.", "Bravo", ["Ouch", "Alas", "Yikes"], "Bravo fits praise."],
+        ["____, the last bus has already left.", "Alas", ["Hooray", "Wow", "Bravo"], "Alas fits regret."],
+        ["____, the cue is in ten seconds.", "Psst", ["Ouch", "Hooray", "Wow"], "Psst fits a quiet warning."],
+        ["____! A beaker just cracked in the sink.", "Yikes", ["Bravo", "Dear", "Hello"], "Yikes fits alarm."],
+        ["____, I think the second graph is the clearer one.", "Well", ["Ouch", "Hooray", "Psst"], "Well fits a mild, considering tone."],
+        ["____! The amendment passed on the final vote.", "Hooray", ["Alas", "Oops", "Ouch"], "Hooray fits celebration."],
+        ["____. May I have your attention before we start?", "Ahem", ["Wow", "Ouch", "Hooray"], "Ahem is used to get attention."],
+        ["____, so that is where the missing key was.", "Ah", ["Ouch", "Bravo", "Yikes"], "Ah fits a realization."],
+        ["____! Don't touch the wet paint.", "Hey", ["Alas", "Bravo", "Hmm"], "Hey fits a quick warning to another person."],
+      ] as const;
+      const [stimulus, answer, distractors, explanation] = rng.pick(rows);
+      return { stimulus, answer, distractors: [...distractors], explanation, key: stimulus };
+    },
+  }),
+  pattern({
+    id: "interjection-rewrite",
+    difficulties: BAND.upper,
+    type: "rewrite",
+    prompt: "Rewrite the sentence, punctuating the interjection correctly.",
+    lines: 2,
+    build: (rng) => {
+      const name = rng.pick(NAMES);
+      const rows = [
+        [`Well ${name} can stay after school.`, `Well, ${name} can stay after school.`, "Well is mild, so set it off with a comma."],
+        [`Wow the backdrop is enormous.`, "Wow! The backdrop is enormous.", "Wow is strong, so use an exclamation point and start the next sentence with a capital letter."],
+        [`Oops ${name} skipped a step.`, `Oops, ${name} skipped a step.`, "Oops is relatively mild here and is set off with a comma."],
+        [`Yikes the beaker cracked.`, "Yikes! The beaker cracked.", "Yikes is a strong interjection, so follow it with an exclamation point and capitalize the next sentence."],
+        [`Hey the bus is at the curb.`, "Hey, the bus is at the curb.", "Hey calls for attention mildly in this sentence, so a comma sets it off."],
+        [`Alas the last ticket is gone.`, "Alas, the last ticket is gone.", "Alas is a mild interjection of regret, so set it off with a comma."],
+        [`Bravo the encore was deserved.`, "Bravo! The encore was deserved.", "Bravo is a strong interjection of praise, so use an exclamation point and start a new sentence."],
+        [`Oh I left the calculator in the lab.`, "Oh, I left the calculator in the lab.", "Oh is a mild interjection here, so set it off with a comma."],
+      ] as const;
+      const [stimulus, answer, explanation] = rng.pick(rows);
+      return { stimulus, answer, explanation, key: stimulus };
+    },
+  }),
+];

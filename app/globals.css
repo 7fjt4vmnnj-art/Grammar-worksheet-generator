@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(31, 77, 58, 0.08), transparent 50%),
+    #f6f1e7;
+}
+
+::selection {
+  background: #d7e5dc;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid #1f4d3a;
+  outline-offset: 2px;
+}
+
+.paper-rule {
+  border-bottom: 1px solid #cfc4b0;
+  height: 1.35rem;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}

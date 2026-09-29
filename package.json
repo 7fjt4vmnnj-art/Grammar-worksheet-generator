@@ -10,7 +10,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test lib/worksheet.test.ts",
-    "sample": "tsx scripts/sample.ts"
+    "sample": "tsx scripts/sample.ts",
+    "export:ios": "tsx scripts/export-ios-content.ts"
   },
   "dependencies": {
     "next": "^15.5.26",

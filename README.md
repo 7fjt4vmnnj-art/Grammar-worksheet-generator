@@ -17,6 +17,33 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Pick a quick start or select skills yourself, then choose **Generate worksheet**. Preview the student page and the answer key, then download the PDFs.
 
+## iOS app
+
+A SwiftUI app for iPhone and iPad lives in `ios/`. It uses the same 34-skill catalog and the same item templates as the web generator. There is no login and no server: worksheets and answer keys are built on the device and shared through the system share sheet.
+
+Minimum version is **iOS 17**. Open the project in **Xcode 15 or later** on a Mac.
+
+```bash
+open ios/GrammarWorksheets.xcodeproj
+```
+
+Choose an iPhone or iPad simulator (or a device) and press Run. If Xcode asks for a signing team, select your Personal Team. On iPhone, set the grade, skills, and options, then tap **Generate worksheet** to preview. On iPad, the preview stays beside the form. From the preview, share the worksheet PDF, the answer key PDF, or both.
+
+The shared generator is a Swift package (`ios/Package.swift`) so the catalog, seeding, and worksheet assembly can be tested without a simulator:
+
+```bash
+cd ios
+swift test
+```
+
+Question text is harvested from `lib/content` into `ios/Sources/GrammarCore/Resources/item-bank.json`. After changing the web catalog or item banks, refresh the iOS copy:
+
+```bash
+npm run export:ios
+```
+
+This Linux environment can compile and test that Swift package. It cannot launch the iOS Simulator, so the Xcode app target was not built here. The on-device PDFs use `UIGraphicsPDFRenderer` and PDFKit.
+
 ## Generate sample PDFs
 
 ```bash
@@ -57,3 +84,5 @@ npm run build
 - `lib/pdf.ts` — worksheet and answer-key PDFs (`pdf-lib`)
 - `components/` — the teacher screen and on-screen preview
 - `scripts/sample.ts` — sample PDF export
+- `scripts/export-ios-content.ts` — refreshes the iOS catalog and item bank
+- `ios/` — SwiftUI app and the `GrammarCore` package

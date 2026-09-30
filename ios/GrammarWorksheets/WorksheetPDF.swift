@@ -1,6 +1,27 @@
 import GrammarCore
 import PDFKit
+#if os(iOS)
 import UIKit
+#elseif os(macOS)
+import AppKit
+import CoreText
+#endif
+
+#if os(iOS)
+typealias PlatformFont = UIFont
+typealias PlatformColor = UIColor
+#elseif os(macOS)
+typealias PlatformFont = NSFont
+typealias PlatformColor = NSColor
+#endif
+
+private func platformColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) -> PlatformColor {
+    #if os(iOS)
+    UIColor(red: red, green: green, blue: blue, alpha: alpha)
+    #else
+    NSColor(srgbRed: red, green: green, blue: blue, alpha: alpha)
+    #endif
+}
 
 enum WorksheetPDF {
     static func render(_ worksheet: Worksheet, kind: DocumentKind) -> Data {
@@ -31,11 +52,11 @@ private final class PDFMaker {
 
     var contentWidth: CGFloat { pageWidth - marginX * 2 }
 
-    let ink = UIColor(red: 0.11, green: 0.10, blue: 0.08, alpha: 1)
-    let muted = UIColor(red: 0.34, green: 0.31, blue: 0.27, alpha: 1)
-    let green = UIColor(red: 0.12, green: 0.30, blue: 0.22, alpha: 1)
-    let rule = UIColor(red: 0.72, green: 0.66, blue: 0.56, alpha: 1)
-    let box = UIColor(red: 0.965, green: 0.955, blue: 0.935, alpha: 1)
+    let ink = platformColor(red: 0.11, green: 0.10, blue: 0.08, alpha: 1)
+    let muted = platformColor(red: 0.34, green: 0.31, blue: 0.27, alpha: 1)
+    let green = platformColor(red: 0.12, green: 0.30, blue: 0.22, alpha: 1)
+    let rule = platformColor(red: 0.72, green: 0.66, blue: 0.56, alpha: 1)
+    let box = platformColor(red: 0.965, green: 0.955, blue: 0.935, alpha: 1)
 
     private var pages: [PaintPage] = []
     private var pageIndex = 0
@@ -52,10 +73,10 @@ private struct PaintPage {
 }
 
 private enum Paint {
-    case text(String, CGFloat, CGFloat, UIFont, UIColor)
-    case line(CGFloat, CGFloat, CGFloat, CGFloat, UIColor)
-    case fill(CGRect, UIColor)
-    case stroke(CGRect, UIColor, CGFloat)
+    case text(String, CGFloat, CGFloat, PlatformFont, PlatformColor)
+    case line(CGFloat, CGFloat, CGFloat, CGFloat, PlatformColor)
+    case fill(CGRect, PlatformColor)
+    case stroke(CGRect, PlatformColor, CGFloat)
 }
 
 extension PDFMaker {
@@ -87,6 +108,7 @@ extension PDFMaker {
             cursor += 6
         }
         addFooters()
+        #if os(iOS)
         let bounds = CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight)
         let renderer = UIGraphicsPDFRenderer(bounds: bounds)
         return renderer.pdfData { context in
@@ -97,7 +119,35 @@ extension PDFMaker {
                 }
             }
         }
+        #else
+        return renderMacPDF()
+        #endif
     }
+
+    #if os(macOS)
+    private func renderMacPDF() -> Data {
+        let data = NSMutableData()
+        var mediaBox = CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight)
+        guard let consumer = CGDataConsumer(data: data as CFMutableData),
+              let pdf = CGContext(consumer: consumer, mediaBox: &mediaBox, nil) else {
+            return Data()
+        }
+        for page in pages {
+            pdf.beginPDFPage(nil)
+            let previous = NSGraphicsContext.current
+            let graphics = NSGraphicsContext(cgContext: pdf, flipped: true)
+            NSGraphicsContext.current = graphics
+            for command in page.commands {
+                paint(command)
+            }
+            graphics.flushGraphics()
+            NSGraphicsContext.current = previous
+            pdf.endPDFPage()
+        }
+        pdf.closePDF()
+        return data as Data
+    }
+    #endif
 
     private func startPage(continuation: Bool) {
         pages.append(PaintPage())
@@ -238,7 +288,7 @@ extension PDFMaker {
         CGFloat(wrapPlain(text, font: times(.italic, 10), maxWidth: contentWidth - 16).count) * 13 + 10
     }
 
-    private func drawParagraph(_ text: String, font: UIFont, color: UIColor, lineHeight: CGFloat) {
+    private func drawParagraph(_ text: String, font: PlatformFont, color: PlatformColor, lineHeight: CGFloat) {
         for line in wrapPlain(text, font: font, maxWidth: contentWidth) {
             ensure(lineHeight)
             emit(line, x: marginX, top: cursor, font: font, color: color)
@@ -246,7 +296,7 @@ extension PDFMaker {
         }
     }
 
-    private func drawRich(_ lines: [[RichSpan]], x: CGFloat, size: CGFloat, color: UIColor) {
+    private func drawRich(_ lines: [[RichSpan]], x: CGFloat, size: CGFloat, color: PlatformColor) {
         let lineHeight = size * 1.35
         for line in lines {
             ensure(lineHeight)
@@ -280,50 +330,91 @@ extension PDFMaker {
         }
     }
 
-    private func emit(_ text: String, x: CGFloat, top: CGFloat, font: UIFont, color: UIColor) {
+    private func emit(_ text: String, x: CGFloat, top: CGFloat, font: PlatformFont, color: PlatformColor) {
         pages[pageIndex].commands.append(.text(text, x, top + font.ascender, font, color))
     }
 
-    private func fill(_ rect: CGRect, _ color: UIColor) {
+    private func fill(_ rect: CGRect, _ color: PlatformColor) {
         pages[pageIndex].commands.append(.fill(rect, color))
     }
 
-    private func stroke(_ rect: CGRect, _ color: UIColor, _ lineWidth: CGFloat) {
+    private func stroke(_ rect: CGRect, _ color: PlatformColor, _ lineWidth: CGFloat) {
         pages[pageIndex].commands.append(.stroke(rect, color, lineWidth))
     }
 
-    private func ruleLine(y: CGFloat, x1: CGFloat, x2: CGFloat, thickness: CGFloat, color: UIColor) {
+    private func ruleLine(y: CGFloat, x1: CGFloat, x2: CGFloat, thickness: CGFloat, color: PlatformColor) {
         pages[pageIndex].commands.append(.line(x1, y, x2, thickness, color))
     }
 
     private func paint(_ command: Paint) {
         switch command {
         case let .text(string, x, baseline, font, color):
-            (string as NSString).draw(
-                at: CGPoint(x: x, y: baseline),
-                withAttributes: [.font: font, .foregroundColor: color]
-            )
+            paintText(string, x: x, baseline: baseline, font: font, color: color)
         case let .line(x1, y, x2, thickness, color):
+            #if os(iOS)
             let path = UIBezierPath()
             path.move(to: CGPoint(x: x1, y: y))
             path.addLine(to: CGPoint(x: x2, y: y))
             path.lineWidth = thickness
             color.setStroke()
             path.stroke()
+            #else
+            let path = NSBezierPath()
+            path.move(to: CGPoint(x: x1, y: y))
+            path.line(to: CGPoint(x: x2, y: y))
+            path.lineWidth = thickness
+            color.setStroke()
+            path.stroke()
+            #endif
         case let .fill(rect, color):
             color.setFill()
+            #if os(iOS)
             UIBezierPath(rect: rect).fill()
+            #else
+            NSBezierPath(rect: rect).fill()
+            #endif
         case let .stroke(rect, color, lineWidth):
+            #if os(iOS)
             let path = UIBezierPath(rect: rect)
             path.lineWidth = lineWidth
             color.setStroke()
             path.stroke()
+            #else
+            let path = NSBezierPath(rect: rect)
+            path.lineWidth = lineWidth
+            color.setStroke()
+            path.stroke()
+            #endif
         }
     }
 
-    private func times(_ style: RichStyle, _ size: CGFloat) -> UIFont {
+    private func paintText(_ string: String, x: CGFloat, baseline: CGFloat, font: PlatformFont, color: PlatformColor) {
+        #if os(iOS)
+        (string as NSString).draw(
+            at: CGPoint(x: x, y: baseline),
+            withAttributes: [.font: font, .foregroundColor: color]
+        )
+        #else
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: color,
+            NSAttributedString.Key(rawValue: (kCTForegroundColorAttributeName as NSString) as String): color.cgColor,
+        ]
+        let line = CTLineCreateWithAttributedString(NSAttributedString(string: string, attributes: attributes))
+        context.saveGState()
+        context.textMatrix = .identity
+        context.translateBy(x: x, y: baseline)
+        context.scaleBy(x: 1, y: -1)
+        context.setFillColor(color.cgColor)
+        CTLineDraw(line, context)
+        context.restoreGState()
+        #endif
+    }
+
+    private func times(_ style: RichStyle, _ size: CGFloat) -> PlatformFont {
         let name: String
-        let weight: UIFont.Weight
+        let weight: PlatformFont.Weight
         switch style {
         case .regular:
             name = "TimesNewRomanPSMT"
@@ -338,26 +429,26 @@ extension PDFMaker {
             name = "TimesNewRomanPS-BoldItalicMT"
             weight = .bold
         }
-        let font = UIFont(name: name, size: size) ?? UIFont.systemFont(ofSize: size, weight: weight)
-        if style == .italic || style == .boldItalic, UIFont(name: name, size: size) == nil {
-            return font.withTraits(.traitItalic) ?? font
+        let font = PlatformFont(name: name, size: size) ?? PlatformFont.systemFont(ofSize: size, weight: weight)
+        if style == .italic || style == .boldItalic, PlatformFont(name: name, size: size) == nil {
+            return font.withTraitsItalic() ?? font
         }
         return font
     }
 
-    private func helvetica(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Helvetica", size: size) ?? UIFont.systemFont(ofSize: size)
+    private func helvetica(_ size: CGFloat) -> PlatformFont {
+        PlatformFont(name: "Helvetica", size: size) ?? PlatformFont.systemFont(ofSize: size)
     }
 
-    private func helveticaBold(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Helvetica-Bold", size: size) ?? UIFont.systemFont(ofSize: size, weight: .bold)
+    private func helveticaBold(_ size: CGFloat) -> PlatformFont {
+        PlatformFont(name: "Helvetica-Bold", size: size) ?? PlatformFont.systemFont(ofSize: size, weight: .bold)
     }
 
-    private func width(_ text: String, font: UIFont) -> CGFloat {
+    private func width(_ text: String, font: PlatformFont) -> CGFloat {
         (text as NSString).size(withAttributes: [.font: font]).width
     }
 
-    private func wrapPlain(_ text: String, font: UIFont, maxWidth: CGFloat) -> [String] {
+    private func wrapPlain(_ text: String, font: PlatformFont, maxWidth: CGFloat) -> [String] {
         var lines: [String] = []
         for paragraph in text.split(separator: "\n", omittingEmptySubsequences: false) {
             let words = paragraph.split(whereSeparator: { $0.isWhitespace }).map(String.init)
@@ -377,7 +468,7 @@ extension PDFMaker {
         return lines.isEmpty ? [""] : lines
     }
 
-    private func chunk(_ word: String, font: UIFont, maxWidth: CGFloat, into lines: inout [String]) -> String {
+    private func chunk(_ word: String, font: PlatformFont, maxWidth: CGFloat, into lines: inout [String]) -> String {
         if width(word, font: font) <= maxWidth { return word }
         var piece = ""
         for character in word {
@@ -471,7 +562,7 @@ extension PDFMaker {
         return lines.isEmpty ? [[RichSpan(text: "", style: .regular)]] : lines
     }
 
-    private func fit(_ text: String, font: UIFont, maxWidth: CGFloat) -> String {
+    private func fit(_ text: String, font: PlatformFont, maxWidth: CGFloat) -> String {
         if width(text, font: font) <= maxWidth { return text }
         var trimmed = text
         while !trimmed.isEmpty && width(trimmed + "…", font: font) > maxWidth {
@@ -481,9 +572,18 @@ extension PDFMaker {
     }
 }
 
+#if os(iOS)
 private extension UIFont {
-    func withTraits(_ traits: UIFontDescriptor.SymbolicTraits) -> UIFont? {
-        guard let descriptor = fontDescriptor.withSymbolicTraits(traits) else { return nil }
+    func withTraitsItalic() -> UIFont? {
+        guard let descriptor = fontDescriptor.withSymbolicTraits(.traitItalic) else { return nil }
         return UIFont(descriptor: descriptor, size: pointSize)
     }
 }
+#elseif os(macOS)
+private extension NSFont {
+    func withTraitsItalic() -> NSFont? {
+        let descriptor = fontDescriptor.withSymbolicTraits(.italic)
+        return NSFont(descriptor: descriptor, size: pointSize)
+    }
+}
+#endif

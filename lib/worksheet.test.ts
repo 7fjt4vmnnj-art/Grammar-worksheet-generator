@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import { PDFDocument } from "pdf-lib";
 import { SKILLS } from "./catalog";
 import { patternsFor } from "./content";
-import { generateFromPatterns } from "./content/engine";
+import { countUniqueItems, generateFromPatterns } from "./content/engine";
 import { fileSlug, generateWorksheet, worksheetItems } from "./generate";
 import { buildPdf } from "./pdf";
 import { Rng } from "./rng";
@@ -77,6 +77,20 @@ describe("item banks", () => {
       });
     }
   }
+});
+
+const DEEP_POOLS = new Set(["commas", "subject-verb-agreement", "confused-words"]);
+
+describe("item variety", () => {
+  it("keeps a deep unique pool for every skill and difficulty", () => {
+    for (const skill of SKILLS) {
+      for (const difficulty of DIFFICULTIES) {
+        const count = countUniqueItems(difficulty, patternsFor(skill.id));
+        const minimum = DEEP_POOLS.has(skill.id) ? 80 : 40;
+        assert.ok(count >= minimum, `${skill.id} at ${difficulty} has ${count} unique items; need ${minimum}`);
+      }
+    }
+  });
 });
 
 describe("worksheets", () => {

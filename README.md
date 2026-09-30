@@ -4,7 +4,7 @@ A teacher-facing generator for middle and high school grammar practice (grades 7
 
 The catalog covers parts of speech, agreement, sentence structure, punctuation, and usage. Each skill can be selected on its own. Skills carry recommended grade bands (7–8, 9–10, 11–12) for filtering, and any grade can still use any skill. Difficulty changes the depth of the items: Developing for grades 7–8, Proficient for 9–10, and Advanced for 11–12, unless you override it.
 
-Generation is seeded. The same grade, skills, question count, difficulty, and seed rebuild the same worksheet.
+Generation is seeded. The same grade, skills, question count, difficulty, and seed rebuild the same worksheet. A new seed draws a different set. Each skill keeps a deep bank of unique items at every difficulty (at least 40, and at least 80 for commas, subject–verb agreement, and commonly confused words). Instructions are paraphrased from a small set of stems, names and other slots are filled from templates, and multiple-choice options are shuffled. The worksheet still drops a repeated prompt, so the same question is not printed twice.
 
 ## Run locally
 
@@ -91,7 +91,7 @@ npm run lint
 npm run build
 ```
 
-`npm test` confirms every skill can produce 25 unique items at each difficulty, and that grade 7 and grade 12 worksheets become real PDFs with matching answer keys.
+`npm test` confirms every skill can produce a 25-question worksheet at each difficulty, checks that the unique pool is at least 40 items deep (80 for commas, subject–verb agreement, and commonly confused words), and builds grade 7 and grade 12 PDFs with matching answer keys.
 
 ## Classroom conventions
 

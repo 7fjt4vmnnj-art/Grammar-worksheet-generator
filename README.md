@@ -27,9 +27,31 @@ Minimum version is **iOS 17**. Open the project in **Xcode 15 or later** on a Ma
 open ios/GrammarWorksheets.xcodeproj
 ```
 
-Choose an iPhone or iPad simulator (or a device) and press Run. If Xcode asks for a signing team, select your Personal Team. On iPhone, set the grade, skills, and options, then tap **Generate worksheet** to preview. On iPad, the preview stays beside the form. From the preview, share the worksheet PDF, the answer key PDF, or both.
+Choose the **GrammarWorksheets** scheme, then an iPhone or iPad simulator (or a device), and press Run. If Xcode asks for a signing team, select your Personal Team. On iPhone, set the grade, skills, and options, then tap **Generate worksheet** to preview. On iPad, the preview stays beside the form. From the preview, share the worksheet PDF, the answer key PDF, or both.
 
-The shared generator is a Swift package (`ios/Package.swift`) so the catalog, seeding, and worksheet assembly can be tested without a simulator:
+## macOS app
+
+The same Xcode project includes a native Mac target, **GrammarWorksheetsMac**, for macOS 14 or later. It links the shared `GrammarCore` package, so the grade list, all 34 skills, seeded generation, and worksheet layout match the iOS app. There is no login and no server. The window keeps the form on the left and the preview on the right.
+
+Open the project in **Xcode 15 or later** on a Mac:
+
+```bash
+open ios/GrammarWorksheets.xcodeproj
+```
+
+Select the **GrammarWorksheetsMac** scheme, choose the **My Mac** destination, and press Run. If Xcode asks for a signing team, select your Personal Team. Pick a grade and one or more skills, then click **Generate worksheet**. Switch the preview between the student page and the answer key.
+
+Save PDFs with the system save panel from **Save PDF** in the preview, or from the File menu:
+
+- **Save Worksheet PDF…** (Command-S)
+- **Save Answer Key PDF…** (Command-Shift-S)
+- **Save Both PDFs…** (Command-Option-S), which asks for a folder and writes both files
+
+**Share** sends the worksheet, the answer key, or both through the Mac share menu. **Worksheet > Generate Worksheet** (Command-Return) builds a new set of questions.
+
+## Shared package
+
+The catalog, seeding, and worksheet assembly live in a Swift package (`ios/Package.swift`). Test them without a simulator or a Mac app launch:
 
 ```bash
 cd ios
@@ -42,7 +64,7 @@ Question text is harvested from `lib/content` into `ios/Sources/GrammarCore/Reso
 npm run export:ios
 ```
 
-This Linux environment can compile and test that Swift package. It cannot launch the iOS Simulator, so the Xcode app target was not built here. The on-device PDFs use `UIGraphicsPDFRenderer` and PDFKit.
+This Linux environment can compile and test that Swift package. It cannot launch Xcode, the iOS Simulator, or the Mac app, so the app targets were not built here. iOS PDFs use `UIGraphicsPDFRenderer` and PDFKit. The Mac target records the same pages and draws them with Core Graphics, then saves through the system save panel.
 
 ## Generate sample PDFs
 
@@ -85,4 +107,4 @@ npm run build
 - `components/` — the teacher screen and on-screen preview
 - `scripts/sample.ts` — sample PDF export
 - `scripts/export-ios-content.ts` — refreshes the iOS catalog and item bank
-- `ios/` — SwiftUI app and the `GrammarCore` package
+- `ios/` — SwiftUI iPhone/iPad app, the native **GrammarWorksheetsMac** target, and the `GrammarCore` package

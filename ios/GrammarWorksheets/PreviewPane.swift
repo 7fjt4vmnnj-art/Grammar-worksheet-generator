@@ -40,32 +40,18 @@ struct PreviewPane: View {
     var body: some View {
         Group {
             if let worksheet = model.worksheet {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        Picker("Preview", selection: $mode) {
-                            ForEach(PreviewMode.allCases) { item in
-                                Text(item.title).tag(item)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .padding(.horizontal, 20)
-                        if let warning = worksheet.warning, mode == .worksheet {
-                            Text(warning)
-                                .font(.footnote)
-                                .foregroundStyle(Theme.muted)
-                                .padding(12)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Theme.mist)
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                .padding(.horizontal, 20)
-                        }
-                        PaperPreview(worksheet: worksheet, mode: mode)
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 24)
-                    }
-                    .padding(.top, 12)
+                #if os(macOS)
+                VStack(spacing: 0) {
+                    macActions
+                        .padding(.top, 12)
+                        .padding(.bottom, 4)
+                    previewScroll(worksheet)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Theme.paper)
+                #else
+                previewScroll(worksheet)
+                #endif
             } else {
                 ContentUnavailableView {
                     Label("No worksheet yet", systemImage: "doc.text")
@@ -75,15 +61,47 @@ struct PreviewPane: View {
                 .background(Theme.paper)
             }
         }
+        #if os(iOS)
         .navigationTitle("Preview")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbar }
+        #endif
         .onAppear(perform: refreshExports)
         .onChange(of: model.worksheet) { _, _ in
             refreshExports()
         }
     }
 
+    private func previewScroll(_ worksheet: Worksheet) -> some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                Picker("Preview", selection: $mode) {
+                    ForEach(PreviewMode.allCases) { item in
+                        Text(item.title).tag(item)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 20)
+                if let warning = worksheet.warning, mode == .worksheet {
+                    Text(warning)
+                        .font(.footnote)
+                        .foregroundStyle(Theme.muted)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Theme.mist)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .padding(.horizontal, 20)
+                }
+                PaperPreview(worksheet: worksheet, mode: mode)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 24)
+            }
+            .padding(.top, 12)
+        }
+        .background(Theme.paper)
+    }
+
+    #if os(iOS)
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
@@ -95,32 +113,74 @@ struct PreviewPane: View {
                     .font(.body.weight(.semibold))
                 }
                 if exports.count == 2 {
-                    Menu {
-                        ShareLink(
-                            item: exports[0],
-                            preview: SharePreview("Worksheet", icon: Image(systemName: "doc.text"))
-                        ) {
-                            Label("Worksheet PDF", systemImage: "doc.text")
-                        }
-                        ShareLink(
-                            item: exports[1],
-                            preview: SharePreview("Answer key", icon: Image(systemName: "key"))
-                        ) {
-                            Label("Answer key PDF", systemImage: "key")
-                        }
-                        ShareLink(items: exports) { item in
-                            SharePreview(item.filename, icon: Image(systemName: "doc.richtext"))
-                        } label: {
-                            Label("Worksheet and answer key", systemImage: "square.and.arrow.up")
-                        }
-                    } label: {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.body.weight(.semibold))
-                    }
-                    .accessibilityLabel("Share PDFs")
+                    shareMenu
                 }
             }
         }
+    }
+    #endif
+
+    #if os(macOS)
+    private var macActions: some View {
+        HStack(spacing: 10) {
+            Button("New questions") {
+                model.generate()
+            }
+            .buttonStyle(.bordered)
+            Spacer(minLength: 12)
+            saveMenu
+            if exports.count == 2 {
+                shareMenu
+            }
+        }
+        .padding(.horizontal, 20)
+    }
+
+    private var saveMenu: some View {
+        Menu("Save PDF") {
+            Button("Worksheet PDF…") { PDFSaver.save(.worksheet, model: model) }
+            Button("Answer Key PDF…") { PDFSaver.save(.answerKey, model: model) }
+            Divider()
+            Button("Worksheet and Answer Key…") { PDFSaver.saveBoth(model: model) }
+        }
+        .menuStyle(.borderedButton)
+        .fixedSize()
+        .accessibilityLabel("Save PDFs")
+    }
+    #endif
+
+    private var shareMenu: some View {
+        Menu {
+            ShareLink(
+                item: exports[0],
+                preview: SharePreview("Worksheet", icon: Image(systemName: "doc.text"))
+            ) {
+                Label("Worksheet PDF", systemImage: "doc.text")
+            }
+            ShareLink(
+                item: exports[1],
+                preview: SharePreview("Answer key", icon: Image(systemName: "key"))
+            ) {
+                Label("Answer key PDF", systemImage: "key")
+            }
+            ShareLink(items: exports) { item in
+                SharePreview(item.filename, icon: Image(systemName: "doc.richtext"))
+            } label: {
+                Label("Worksheet and answer key", systemImage: "square.and.arrow.up")
+            }
+        } label: {
+            #if os(macOS)
+            Text("Share")
+            #else
+            Image(systemName: "square.and.arrow.up")
+                .font(.body.weight(.semibold))
+            #endif
+        }
+        #if os(macOS)
+        .menuStyle(.borderedButton)
+        .fixedSize()
+        #endif
+        .accessibilityLabel("Share PDFs")
     }
 
     private func refreshExports() {

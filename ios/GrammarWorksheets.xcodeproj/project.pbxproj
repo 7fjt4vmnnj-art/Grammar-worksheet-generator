@@ -16,6 +16,16 @@
 		A10000000000000000000027 /* WorksheetPDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000017 /* WorksheetPDF.swift */; };
 		A10000000000000000000028 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000018 /* Assets.xcassets */; };
 		A10000000000000000000029 /* GrammarCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1000000000000000000000B /* GrammarCore */; };
+		B20000000000000000000021 /* GrammarWorksheetsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* GrammarWorksheetsApp.swift */; };
+		B20000000000000000000022 /* WorksheetModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* WorksheetModel.swift */; };
+		B20000000000000000000023 /* QuickStarts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000013 /* QuickStarts.swift */; };
+		B20000000000000000000024 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000014 /* Theme.swift */; };
+		B20000000000000000000025 /* BuilderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000015 /* BuilderView.swift */; };
+		B20000000000000000000026 /* PreviewPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000016 /* PreviewPane.swift */; };
+		B20000000000000000000027 /* WorksheetPDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000017 /* WorksheetPDF.swift */; };
+		B20000000000000000000028 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000018 /* Assets.xcassets */; };
+		B20000000000000000000029 /* GrammarCore in Frameworks */ = {isa = PBXBuildFile; productRef = B2000000000000000000000B /* GrammarCore */; };
+		B2000000000000000000002A /* PDFSaver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001A /* PDFSaver.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +38,9 @@
 		A10000000000000000000016 /* PreviewPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewPane.swift; sourceTree = "<group>"; };
 		A10000000000000000000017 /* WorksheetPDF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorksheetPDF.swift; sourceTree = "<group>"; };
 		A10000000000000000000018 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B20000000000000000000006 /* GrammarWorksheetsMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GrammarWorksheetsMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000019 /* GrammarWorksheetsMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GrammarWorksheetsMac.entitlements; sourceTree = "<group>"; };
+		B2000000000000000000001A /* PDFSaver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFSaver.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +49,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000029 /* GrammarCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B20000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B20000000000000000000029 /* GrammarCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,6 +78,8 @@
 				A10000000000000000000015 /* BuilderView.swift */,
 				A10000000000000000000016 /* PreviewPane.swift */,
 				A10000000000000000000017 /* WorksheetPDF.swift */,
+				B2000000000000000000001A /* PDFSaver.swift */,
+				B20000000000000000000019 /* GrammarWorksheetsMac.entitlements */,
 				A10000000000000000000012 /* WorksheetModel.swift */,
 				A10000000000000000000013 /* QuickStarts.swift */,
 				A10000000000000000000014 /* Theme.swift */,
@@ -69,6 +92,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000006 /* GrammarWorksheets.app */,
+				B20000000000000000000006 /* GrammarWorksheetsMac.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -96,6 +120,26 @@
 			productReference = A10000000000000000000006 /* GrammarWorksheets.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B20000000000000000000007 /* GrammarWorksheetsMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B20000000000000000000008 /* Build configuration list for PBXNativeTarget "GrammarWorksheetsMac" */;
+			buildPhases = (
+				B20000000000000000000009 /* Sources */,
+				B20000000000000000000002 /* Frameworks */,
+				B2000000000000000000000A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GrammarWorksheetsMac;
+			packageProductDependencies = (
+				B2000000000000000000000B /* GrammarCore */,
+			);
+			productName = GrammarWorksheetsMac;
+			productReference = B20000000000000000000006 /* GrammarWorksheetsMac.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -107,6 +151,9 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					A10000000000000000000007 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					B20000000000000000000007 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
@@ -128,6 +175,7 @@
 			projectRoot = "";
 			targets = (
 				A10000000000000000000007 /* GrammarWorksheets */,
+				B20000000000000000000007 /* GrammarWorksheetsMac */,
 			);
 		};
 /* End PBXProject section */
@@ -138,6 +186,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000028 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B2000000000000000000000A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B20000000000000000000028 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,6 +211,21 @@
 				A10000000000000000000025 /* BuilderView.swift in Sources */,
 				A10000000000000000000026 /* PreviewPane.swift in Sources */,
 				A10000000000000000000027 /* WorksheetPDF.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B20000000000000000000009 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B20000000000000000000021 /* GrammarWorksheetsApp.swift in Sources */,
+				B20000000000000000000022 /* WorksheetModel.swift in Sources */,
+				B20000000000000000000023 /* QuickStarts.swift in Sources */,
+				B20000000000000000000024 /* Theme.swift in Sources */,
+				B20000000000000000000025 /* BuilderView.swift in Sources */,
+				B20000000000000000000026 /* PreviewPane.swift in Sources */,
+				B20000000000000000000027 /* WorksheetPDF.swift in Sources */,
+				B2000000000000000000002A /* PDFSaver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -223,6 +294,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -254,9 +326,70 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B20000000000000000000043 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = GrammarWorksheets/GrammarWorksheetsMac.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Grammar Worksheets";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_NSHighResolutionCapable = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.grammarworksheets.mac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B20000000000000000000044 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = GrammarWorksheets/GrammarWorksheetsMac.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Grammar Worksheets";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_NSHighResolutionCapable = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.grammarworksheets.mac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -281,6 +414,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B20000000000000000000008 /* Build configuration list for PBXNativeTarget "GrammarWorksheetsMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B20000000000000000000043 /* Debug */,
+				B20000000000000000000044 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -292,6 +434,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		A1000000000000000000000B /* GrammarCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1000000000000000000000E /* XCLocalSwiftPackageReference "." */;
+			productName = GrammarCore;
+		};
+		B2000000000000000000000B /* GrammarCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A1000000000000000000000E /* XCLocalSwiftPackageReference "." */;
 			productName = GrammarCore;

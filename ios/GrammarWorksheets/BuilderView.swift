@@ -19,10 +19,14 @@ struct BuilderView: View {
             .padding(.top, 8)
             .padding(.bottom, 12)
         }
+        #if os(iOS)
         .scrollDismissesKeyboard(.interactively)
+        #endif
         .background(Theme.paper)
+        #if os(iOS)
         .navigationTitle("Grammar")
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .safeAreaInset(edge: .bottom) { generateBar }
         .sensoryFeedback(.success, trigger: model.worksheet?.meta.seed)
     }
@@ -137,7 +141,9 @@ struct BuilderView: View {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .stroke(Theme.rule, lineWidth: 1)
                 )
+                #if os(iOS)
                 .textInputAutocapitalization(.never)
+                #endif
                 .autocorrectionDisabled()
             HStack(spacing: 16) {
                 Button("Select recommended") { model.selectRecommended() }

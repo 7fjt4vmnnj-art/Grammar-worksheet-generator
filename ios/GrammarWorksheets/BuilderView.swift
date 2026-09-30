@@ -4,6 +4,9 @@ import SwiftUI
 struct BuilderView: View {
     @Bindable var model: WorksheetModel
     var presentsPreview: Bool
+    @Environment(AppAppearance.self) private var appearance
+
+    private var palette: Palette { appearance.ui }
 
     var body: some View {
         ScrollView {
@@ -14,6 +17,7 @@ struct BuilderView: View {
                 skillPicker
                 options
                 headerFields
+                AppearancePicker()
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -22,10 +26,15 @@ struct BuilderView: View {
         #if os(iOS)
         .scrollDismissesKeyboard(.interactively)
         #endif
-        .background(Theme.paper)
+        .background(palette.paper)
         #if os(iOS)
         .navigationTitle("Grammar")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                AppearanceMenu()
+            }
+        }
         #endif
         .safeAreaInset(edge: .bottom) { generateBar }
         .sensoryFeedback(.success, trigger: model.worksheet?.meta.seed)
@@ -35,10 +44,10 @@ struct BuilderView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Grammar Worksheets")
                 .font(.system(size: 32, weight: .semibold, design: .serif))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(palette.ink)
             Text("Pick a grade and the skills you want to practice. The app builds a worksheet and a matching answer key on this device.")
                 .font(.body)
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(palette.muted)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.top, 8)
@@ -57,12 +66,12 @@ struct BuilderView: View {
                             .font(.title3.weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: 52)
-                            .background(selected ? Theme.moss : Theme.card)
-                            .foregroundStyle(selected ? Color.white : Theme.ink)
+                            .background(selected ? palette.accentFill : palette.card)
+                            .foregroundStyle(selected ? palette.onAccent : palette.ink)
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(selected ? Theme.moss : Theme.rule, lineWidth: 1)
+                                    .stroke(selected ? palette.accentFill : palette.rule, lineWidth: 1)
                             )
                     }
                     .buttonStyle(.plain)
@@ -85,23 +94,23 @@ struct BuilderView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(start.title)
                                     .font(.body.weight(.semibold))
-                                    .foregroundStyle(Theme.ink)
+                                    .foregroundStyle(palette.ink)
                                 Text(start.detail)
                                     .font(.subheadline)
-                                    .foregroundStyle(Theme.muted)
+                                    .foregroundStyle(palette.muted)
                                     .multilineTextAlignment(.leading)
                             }
                             Spacer(minLength: 12)
                             Image(systemName: "arrow.right")
-                                .foregroundStyle(Theme.moss)
+                                .foregroundStyle(palette.accent)
                         }
                         .padding(14)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Theme.card)
+                        .background(palette.card)
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(Theme.rule.opacity(0.8), lineWidth: 1)
+                                .stroke(palette.rule.opacity(0.8), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
@@ -117,7 +126,7 @@ struct BuilderView: View {
                 Spacer()
                 Text("\(model.selectedSkillIDs.count) selected")
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Theme.muted)
+                    .foregroundStyle(palette.muted)
             }
             Picker("Which skills to show", selection: $model.recommendedOnly) {
                 Text("Recommended").tag(true)
@@ -134,12 +143,13 @@ struct BuilderView: View {
             }
             TextField("Search skills", text: $model.query)
                 .textFieldStyle(.plain)
+                .foregroundStyle(palette.ink)
                 .padding(12)
-                .background(Theme.card)
+                .background(palette.card)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(Theme.rule, lineWidth: 1)
+                        .stroke(palette.rule, lineWidth: 1)
                 )
                 #if os(iOS)
                 .textInputAutocapitalization(.never)
@@ -150,11 +160,11 @@ struct BuilderView: View {
                 Button("Clear") { model.clearSkills() }
             }
             .font(.subheadline.weight(.semibold))
-            .foregroundStyle(Theme.moss)
+            .foregroundStyle(palette.accent)
             if model.visibleSkills.isEmpty {
                 Text("No skills match that search.")
                     .font(.body)
-                    .foregroundStyle(Theme.muted)
+                    .foregroundStyle(palette.muted)
                     .padding(.vertical, 12)
             } else {
                 VStack(spacing: 8) {
@@ -175,10 +185,10 @@ struct BuilderView: View {
                 .font(.subheadline.weight(.semibold))
                 .padding(.horizontal, 14)
                 .frame(minHeight: 44)
-                .background(selected ? Theme.moss : Theme.card)
-                .foregroundStyle(selected ? Color.white : Theme.ink)
+                .background(selected ? palette.accentFill : palette.card)
+                .foregroundStyle(selected ? palette.onAccent : palette.ink)
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(selected ? Theme.moss : Theme.rule, lineWidth: 1))
+                .overlay(Capsule().stroke(selected ? palette.accentFill : palette.rule, lineWidth: 1))
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])
@@ -193,33 +203,33 @@ struct BuilderView: View {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
-                    .foregroundStyle(selected ? Theme.moss : Theme.rule)
+                    .foregroundStyle(selected ? palette.accent : palette.rule)
                     .frame(width: 32, height: 32)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(skill.name)
                         .font(.body.weight(.semibold))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(palette.ink)
                         .multilineTextAlignment(.leading)
                     Text(skill.summary)
                         .font(.subheadline)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(palette.muted)
                         .multilineTextAlignment(.leading)
                     if !recommended {
                         Text("Outside the usual band for grade \(model.grade.rawValue)")
                             .font(.caption.weight(.medium))
-                            .foregroundStyle(Theme.moss)
+                            .foregroundStyle(palette.accent)
                     }
                 }
                 Spacer(minLength: 0)
             }
             .padding(14)
             .frame(maxWidth: .infinity, minHeight: 72, alignment: .leading)
-            .background(Theme.card)
+            .background(palette.card)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(selected ? Theme.moss : Theme.rule.opacity(0.85), lineWidth: selected ? 1.5 : 1)
+                    .stroke(selected ? palette.accentFill : palette.rule.opacity(0.85), lineWidth: selected ? 1.5 : 1)
             )
             .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
@@ -252,7 +262,7 @@ struct BuilderView: View {
                     }
                     Text("Between 5 and 25. Questions are shared across the skills you select.")
                         .font(.footnote)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(palette.muted)
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Difficulty")
                             .font(.body.weight(.semibold))
@@ -263,16 +273,16 @@ struct BuilderView: View {
                         }
                         Text(model.difficulty.blurb)
                             .font(.footnote)
-                            .foregroundStyle(Theme.muted)
+                            .foregroundStyle(palette.muted)
                         if model.difficulty == model.grade.defaultDifficulty {
                             Text("Suggested for grade \(model.grade.rawValue).")
                                 .font(.footnote.weight(.medium))
-                                .foregroundStyle(Theme.moss)
+                                .foregroundStyle(palette.accent)
                         }
                     }
                     Toggle("Include directions", isOn: $model.includeDirections)
                         .font(.body.weight(.semibold))
-                        .tint(Theme.moss)
+                        .tint(palette.accentFill)
                 }
             }
         }
@@ -283,12 +293,12 @@ struct BuilderView: View {
             Image(systemName: systemName)
                 .font(.body.weight(.bold))
                 .frame(width: 44, height: 44)
-                .background(Theme.mist)
+                .background(palette.mist)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
-        .foregroundStyle(Theme.ink)
+        .foregroundStyle(palette.ink)
     }
 
     private func difficultyButton(_ level: Difficulty) -> some View {
@@ -302,8 +312,8 @@ struct BuilderView: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, minHeight: 48)
                 .padding(.horizontal, 4)
-                .background(selected ? Theme.moss : Theme.mist)
-                .foregroundStyle(selected ? Color.white : Theme.ink)
+                .background(selected ? palette.accentFill : palette.mist)
+                .foregroundStyle(selected ? palette.onAccent : palette.ink)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -315,15 +325,19 @@ struct BuilderView: View {
             SectionLabel(title: "Header")
             Text("Optional. Blank teacher and class lines are left off the page.")
                 .font(.footnote)
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(palette.muted)
             Card {
                 VStack(alignment: .leading, spacing: 14) {
                     labeledField("Teacher", text: $model.teacher, prompt: "Ms. Okonkwo")
                     labeledField("Class", text: $model.className, prompt: "English 7")
-                    labeledField("Title", text: $model.title, prompt: "Automatic from the skills")
+                    labeledField("Title", text: titleBinding, prompt: "Grade and skills")
+                    Text("This heading updates when you change the grade, the skills, or a quick start. Type your own title to override it until the next change.")
+                        .font(.footnote)
+                        .foregroundStyle(palette.muted)
+                        .fixedSize(horizontal: false, vertical: true)
                     Toggle("Print the date", isOn: $model.includeDate)
                         .font(.body.weight(.semibold))
-                        .tint(Theme.moss)
+                        .tint(palette.accentFill)
                     if model.includeDate {
                         DatePicker("Date", selection: $model.date, displayedComponents: .date)
                             .font(.body.weight(.semibold))
@@ -337,10 +351,12 @@ struct BuilderView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.subheadline.weight(.semibold))
+                .foregroundStyle(palette.ink)
             TextField(prompt, text: text)
                 .textFieldStyle(.plain)
+                .foregroundStyle(palette.ink)
                 .padding(12)
-                .background(Theme.mist)
+                .background(palette.mist)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
@@ -350,12 +366,17 @@ struct BuilderView: View {
             if let errorMessage = model.errorMessage {
                 Text(errorMessage)
                     .font(.footnote)
-                    .foregroundStyle(Color(red: 0.55, green: 0.16, blue: 0.12))
+                    .foregroundStyle(palette.error)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
+            Text(model.displayTitle)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(palette.ink)
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
             Text(summary)
                 .font(.footnote)
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(palette.muted)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button {
                 model.generate()
@@ -367,8 +388,8 @@ struct BuilderView: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 54)
-                    .background(model.selectedSkillIDs.isEmpty ? Theme.rule : Theme.moss)
-                    .foregroundStyle(Color.white)
+                    .background(model.selectedSkillIDs.isEmpty ? palette.rule : palette.accentFill)
+                    .foregroundStyle(palette.onAccent)
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -378,6 +399,13 @@ struct BuilderView: View {
         .padding(.top, 10)
         .padding(.bottom, 8)
         .background(.ultraThinMaterial)
+    }
+
+    private var titleBinding: Binding<String> {
+        Binding(
+            get: { model.titleState.title },
+            set: { model.setCustomTitle($0) }
+        )
     }
 
     private var summary: String {

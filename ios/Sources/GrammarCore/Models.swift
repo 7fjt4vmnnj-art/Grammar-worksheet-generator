@@ -154,8 +154,8 @@ public struct WorksheetSection: Identifiable, Equatable, Sendable {
 }
 
 public struct WorksheetMeta: Equatable, Sendable {
-    public let title: String
-    public let grade: Grade
+    public var title: String
+    public var grade: Grade
     public let difficulty: Difficulty
     public let teacher: String
     public let className: String
@@ -166,9 +166,22 @@ public struct WorksheetMeta: Equatable, Sendable {
 }
 
 public struct Worksheet: Equatable, Sendable {
-    public let meta: WorksheetMeta
+    public var meta: WorksheetMeta
     public let warning: String?
     public let sections: [WorksheetSection]
+
+    public func withTitle(_ title: String) -> Worksheet {
+        var copy = self
+        copy.meta.title = title
+        return copy
+    }
+
+    public func withHeader(title: String, grade: Grade) -> Worksheet {
+        var copy = self
+        copy.meta.title = title
+        copy.meta.grade = grade
+        return copy
+    }
 }
 
 public struct GenerateInput: Equatable, Sendable {

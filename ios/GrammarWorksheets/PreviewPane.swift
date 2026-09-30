@@ -34,6 +34,7 @@ struct PDFExport: Transferable {
 
 struct PreviewPane: View {
     @Bindable var model: WorksheetModel
+    @Environment(AppAppearance.self) private var appearance
     @State private var mode: PreviewMode = .worksheet
     @State private var exports: [PDFExport] = []
 
@@ -48,7 +49,7 @@ struct PreviewPane: View {
                     previewScroll(worksheet)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Theme.paper)
+                .background(appearance.ui.paper)
                 #else
                 previewScroll(worksheet)
                 #endif
@@ -56,9 +57,9 @@ struct PreviewPane: View {
                 ContentUnavailableView {
                     Label("No worksheet yet", systemImage: "doc.text")
                 } description: {
-                    Text("Choose a grade and at least one skill, then generate. The preview and both PDFs show up here.")
+                    Text("Choose a grade and at least one skill, then generate. Save, share, and print show up once the preview is ready.")
                 }
-                .background(Theme.paper)
+                .background(appearance.ui.paper)
             }
         }
         #if os(iOS)
@@ -68,6 +69,9 @@ struct PreviewPane: View {
         #endif
         .onAppear(perform: refreshExports)
         .onChange(of: model.worksheet) { _, _ in
+            refreshExports()
+        }
+        .onChange(of: appearance.theme) { _, _ in
             refreshExports()
         }
     }
@@ -85,20 +89,25 @@ struct PreviewPane: View {
                 if let warning = worksheet.warning, mode == .worksheet {
                     Text(warning)
                         .font(.footnote)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(appearance.ui.muted)
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Theme.mist)
+                        .background(appearance.ui.mist)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         .padding(.horizontal, 20)
                 }
-                PaperPreview(worksheet: worksheet, mode: mode)
+                PaperPreview(
+                    worksheet: worksheet,
+                    mode: mode,
+                    title: model.displayTitle,
+                    grade: model.grade
+                )
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
             }
             .padding(.top, 12)
         }
-        .background(Theme.paper)
+        .background(appearance.ui.paper)
     }
 
     #if os(iOS)
@@ -128,27 +137,13 @@ struct PreviewPane: View {
             }
             .buttonStyle(.bordered)
             Spacer(minLength: 12)
-            saveMenu
-            if exports.count == 2 {
-                shareMenu
-            }
+            MacExportMenus(model: model)
         }
         .padding(.horizontal, 20)
     }
-
-    private var saveMenu: some View {
-        Menu("Save PDF") {
-            Button("Worksheet PDF…") { PDFSaver.save(.worksheet, model: model) }
-            Button("Answer Key PDF…") { PDFSaver.save(.answerKey, model: model) }
-            Divider()
-            Button("Worksheet and Answer Key…") { PDFSaver.saveBoth(model: model) }
-        }
-        .menuStyle(.borderedButton)
-        .fixedSize()
-        .accessibilityLabel("Save PDFs")
-    }
     #endif
 
+    #if os(iOS)
     private var shareMenu: some View {
         Menu {
             ShareLink(
@@ -169,33 +164,28 @@ struct PreviewPane: View {
                 Label("Worksheet and answer key", systemImage: "square.and.arrow.up")
             }
         } label: {
-            #if os(macOS)
-            Text("Share")
-            #else
             Image(systemName: "square.and.arrow.up")
                 .font(.body.weight(.semibold))
-            #endif
         }
-        #if os(macOS)
-        .menuStyle(.borderedButton)
-        .fixedSize()
-        #endif
         .accessibilityLabel("Share PDFs")
     }
+    #endif
 
     private func refreshExports() {
         guard let worksheet = model.worksheet else {
             exports = []
             return
         }
+        let titled = worksheet.withHeader(title: model.displayTitle, grade: model.grade)
+        let colors = appearance.pdfColors
         exports = [
             PDFExport(
-                filename: fileSlug(title: worksheet.meta.title, grade: worksheet.meta.grade, kind: .worksheet),
-                data: WorksheetPDF.render(worksheet, kind: .worksheet)
+                filename: fileSlug(title: titled.meta.title, grade: titled.meta.grade, kind: .worksheet),
+                data: WorksheetPDF.render(titled, kind: .worksheet, colors: colors)
             ),
             PDFExport(
-                filename: fileSlug(title: worksheet.meta.title, grade: worksheet.meta.grade, kind: .answerKey),
-                data: WorksheetPDF.render(worksheet, kind: .answerKey)
+                filename: fileSlug(title: titled.meta.title, grade: titled.meta.grade, kind: .answerKey),
+                data: WorksheetPDF.render(titled, kind: .answerKey, colors: colors)
             ),
         ]
     }
@@ -204,13 +194,17 @@ struct PreviewPane: View {
 private struct PaperPreview: View {
     let worksheet: Worksheet
     let mode: PreviewMode
+    let title: String
+    let grade: Grade
+    @Environment(AppAppearance.self) private var appearance
 
     private var answerKey: Bool { mode == .answerKey }
+    private var page: Palette { appearance.printable }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Rectangle()
-                .fill(Theme.moss)
+                .fill(page.accent)
                 .frame(height: 8)
                 .padding(.horizontal, -28)
                 .padding(.top, -28)
@@ -218,46 +212,46 @@ private struct PaperPreview: View {
                 Text(answerKey ? "ANSWER KEY" : "GRAMMAR WORKSHEET")
                     .font(.caption.weight(.semibold))
                     .tracking(1.2)
-                    .foregroundStyle(Theme.moss)
+                    .foregroundStyle(page.accent)
                 Spacer()
-                Text("GRADE \(worksheet.meta.grade.rawValue)")
+                Text("GRADE \(grade.rawValue)")
                     .font(.caption.weight(.semibold))
                     .tracking(1.2)
-                    .foregroundStyle(Theme.moss)
+                    .foregroundStyle(page.accent)
             }
-            Text(worksheet.meta.title)
+            Text(title)
                 .font(.system(size: 28, weight: .semibold, design: .serif))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(page.ink)
             Text(metaLine)
                 .font(.subheadline)
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(page.muted)
             if answerKey {
                 Text("Teacher copy. When a revision can be worded more than one way, one strong model is shown.")
                     .font(.subheadline.italic())
-                    .foregroundStyle(Theme.muted)
+                    .foregroundStyle(page.muted)
             } else {
                 Text("Name ________________________________    Period ________")
                     .font(.system(.body, design: .serif))
             }
             Rectangle()
-                .fill(Theme.moss)
+                .fill(page.accent)
                 .frame(height: 1.5)
             ForEach(worksheet.sections) { section in
                 VStack(alignment: .leading, spacing: 10) {
                     Text(section.skillName.uppercased())
                         .font(.caption.weight(.bold))
                         .tracking(1.4)
-                        .foregroundStyle(Theme.moss)
+                        .foregroundStyle(page.accent)
                     if worksheet.meta.includeDirections {
                         richText(section.directions)
                             .font(.system(.subheadline, design: .serif).italic())
-                            .foregroundStyle(Theme.ink)
+                            .foregroundStyle(page.ink)
                             .padding(10)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Theme.mist)
+                            .background(page.mist)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 4)
-                                    .stroke(Theme.rule, lineWidth: 0.6)
+                                    .stroke(page.rule, lineWidth: 0.6)
                             )
                     }
                     ForEach(section.items) { item in
@@ -269,9 +263,14 @@ private struct PaperPreview: View {
         }
         .padding(28)
         .frame(maxWidth: 720, alignment: .leading)
-        .background(Color.white)
+        .foregroundStyle(page.ink)
+        .background(page.paper)
         .clipShape(RoundedRectangle(cornerRadius: 2))
-        .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
+        .overlay(
+            RoundedRectangle(cornerRadius: 2)
+                .stroke(page.rule.opacity(0.7), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(appearance.theme == .dark ? 0.45 : 0.08), radius: 16, y: 6)
         .frame(maxWidth: .infinity)
     }
 
@@ -295,11 +294,11 @@ private struct PaperPreview: View {
             VStack(alignment: .leading, spacing: 6) {
                 richText(item.prompt)
                     .font(.system(.body, design: .serif))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(page.ink)
                 if let stimulus = item.stimulus {
                     richText(stimulus)
                         .font(.system(.body, design: .serif))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(page.ink)
                 }
                 if let choices = item.choices {
                     VStack(alignment: .leading, spacing: 4) {
@@ -317,17 +316,17 @@ private struct PaperPreview: View {
                 if answerKey {
                     richText("Answer: \(item.answer)")
                         .font(.system(.body, design: .serif).weight(.semibold))
-                        .foregroundStyle(Theme.moss)
+                        .foregroundStyle(page.accent)
                     if let explanation = item.explanation {
                         richText(explanation)
                             .font(.footnote)
-                            .foregroundStyle(Theme.muted)
+                            .foregroundStyle(page.muted)
                     }
                 } else if item.choices == nil {
                     VStack(spacing: 14) {
                         ForEach(0..<item.lines, id: \.self) { _ in
                             Rectangle()
-                                .fill(Theme.rule)
+                                .fill(page.rule)
                                 .frame(height: 1)
                         }
                     }

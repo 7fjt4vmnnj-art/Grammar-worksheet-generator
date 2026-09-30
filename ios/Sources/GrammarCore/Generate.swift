@@ -8,6 +8,74 @@ public func defaultTitle(skills: [Skill]) -> String {
     return "Grammar Practice"
 }
 
+/// Title shown on the worksheet and in the PDF header. It names the grade and the selected skills.
+public func suggestedWorksheetTitle(grade: Grade, skills: [Skill]) -> String {
+    let prefix = "Grade \(grade.rawValue)"
+    if skills.isEmpty {
+        return "\(prefix) Grammar"
+    }
+    if skills.count == 1 {
+        return "\(prefix): \(skills[0].name)"
+    }
+    let names = skills.map(\.name)
+    let full = "\(prefix): \(names.joined(separator: ", "))"
+    if full.count <= 140 {
+        return full
+    }
+    var kept: [String] = []
+    for name in names {
+        let next = kept + [name]
+        let extra = names.count - next.count
+        let candidate = extra == 0
+            ? "\(prefix): \(next.joined(separator: ", "))"
+            : "\(prefix): \(next.joined(separator: ", ")), and \(extra) more"
+        if candidate.count > 140 && !kept.isEmpty {
+            break
+        }
+        kept = next
+    }
+    let extra = names.count - kept.count
+    if kept.isEmpty {
+        return "\(prefix) Grammar Practice"
+    }
+    if extra == 0 {
+        return "\(prefix): \(kept.joined(separator: ", "))"
+    }
+    return "\(prefix): \(kept.joined(separator: ", ")), and \(extra) more"
+}
+
+/// Tracks the worksheet title so grade, skill, and quick-start changes replace a stale heading,
+/// while a typed title is kept until the next one of those changes.
+public struct WorksheetTitleState: Equatable, Sendable {
+    public private(set) var title: String
+    public private(set) var followsSelection: Bool
+
+    public init(grade: Grade, skills: [Skill]) {
+        title = suggestedWorksheetTitle(grade: grade, skills: skills)
+        followsSelection = true
+    }
+
+    public mutating func selectionChanged(grade: Grade, skills: [Skill]) {
+        followsSelection = true
+        title = suggestedWorksheetTitle(grade: grade, skills: skills)
+    }
+
+    public mutating func userEdited(_ newValue: String, grade: Grade, skills: [Skill]) {
+        title = newValue
+        let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let suggested = suggestedWorksheetTitle(grade: grade, skills: skills)
+        followsSelection = trimmed.isEmpty || trimmed == suggested
+    }
+
+    public func resolved(grade: Grade, skills: [Skill]) -> String {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return suggestedWorksheetTitle(grade: grade, skills: skills)
+        }
+        return trimmed
+    }
+}
+
 public func formatLongDate(_ iso: String) -> String {
     let trimmed = iso.trimmingCharacters(in: .whitespacesAndNewlines)
     let parts = trimmed.split(separator: "-").map(String.init)
@@ -102,7 +170,7 @@ public func generateWorksheet(_ input: GenerateInput) throws -> Worksheet {
     }
     let used = zip(skills, counts).compactMap { skill, count in count > 0 ? skill : nil }
     let title = input.title.trimmingCharacters(in: .whitespacesAndNewlines)
-    let resolvedTitle = title.isEmpty ? defaultTitle(skills: used) : title
+    let resolvedTitle = title.isEmpty ? suggestedWorksheetTitle(grade: input.grade, skills: used) : title
     let warning: String?
     if skipped.isEmpty {
         warning = nil

@@ -29,6 +29,10 @@ open ios/GrammarWorksheets.xcodeproj
 
 Choose the **GrammarWorksheets** scheme, then an iPhone or iPad simulator (or a device), and press Run. If Xcode asks for a signing team, select your Personal Team. On iPhone, set the grade, skills, and options, then tap **Generate worksheet** to preview. On iPad, the preview stays beside the form. From the preview, share the worksheet PDF, the answer key PDF, or both.
 
+The worksheet title is filled in from the grade and the skills you select. It updates as soon as you change the grade, the skills, or a quick start, and that same heading is used on the preview and in the PDF. You can type a different title; the next grade, skill, or quick start change fills in a new one.
+
+**Appearance**, in the form and in the toolbar, offers Classic, Soft pastel, High contrast, and Dark. The choice is remembered on the device. Dark and pastel recolor the workspace. The worksheet page and the PDFs stay on a light background so they remain readable when printed.
+
 ## macOS app
 
 The same Xcode project includes a native Mac target, **GrammarWorksheetsMac**, for macOS 14 or later. It links the shared `GrammarCore` package, so the grade list, all 34 skills, seeded generation, and worksheet layout match the iOS app. There is no login and no server. The window keeps the form on the left and the preview on the right.
@@ -39,15 +43,15 @@ Open the project in **Xcode 15 or later** on a Mac:
 open ios/GrammarWorksheets.xcodeproj
 ```
 
-Select the **GrammarWorksheetsMac** scheme, choose the **My Mac** destination, and press Run. If Xcode asks for a signing team, select your Personal Team. Pick a grade and one or more skills, then click **Generate worksheet**. Switch the preview between the student page and the answer key.
+Select the **GrammarWorksheetsMac** scheme, choose the **My Mac** destination, and press Run. If Xcode asks for a signing team, select your Personal Team. Pick a grade and one or more skills, then click **Generate worksheet**. The title under the generate button, in the window subtitle, and on the preview follows the grade and skills immediately. Switch the preview between the student page and the answer key.
 
-Save PDFs with the system save panel from **Save PDF** in the preview, or from the File menu:
+After a worksheet exists, **Save PDF**, **Share**, and **Print** are in the toolbar and again above the preview. The same actions are in the File menu:
 
-- **Save Worksheet PDF…** (Command-S)
-- **Save Answer Key PDF…** (Command-Shift-S)
-- **Save Both PDFs…** (Command-Option-S), which asks for a folder and writes both files
+- **Save Worksheet PDF…** (Command-S), **Save Answer Key PDF…** (Command-Shift-S), and **Save Both PDFs…** (Command-Option-S). Saving both asks for a folder and writes both files.
+- **Print Worksheet…** (Command-P), **Print Answer Key…** (Command-Shift-P), and **Print Worksheet and Answer Key…** (Command-Option-P).
+- **Share Worksheet…**, **Share Answer Key…**, and **Share Worksheet and Answer Key…** open the system share sheet.
 
-**Share** sends the worksheet, the answer key, or both through the Mac share menu. **Worksheet > Generate Worksheet** (Command-Return) builds a new set of questions.
+**Worksheet > Generate Worksheet** (Command-Return) builds a new set of questions. **Appearance** in the toolbar (and in the form) switches Classic, Soft pastel, High contrast, and Dark. The choice is remembered. Printed pages stay light even when the workspace is dark.
 
 ## Shared package
 

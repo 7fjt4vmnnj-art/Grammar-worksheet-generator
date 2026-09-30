@@ -23,9 +23,30 @@ private func platformColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: C
     #endif
 }
 
+struct WorksheetColors: Equatable {
+    struct RGB: Equatable {
+        var red: CGFloat
+        var green: CGFloat
+        var blue: CGFloat
+    }
+
+    var ink: RGB
+    var muted: RGB
+    var accent: RGB
+    var rule: RGB
+    var box: RGB
+    var paper: RGB
+
+    static let classic = AppearanceTheme.classic.pdfColors
+}
+
 enum WorksheetPDF {
-    static func render(_ worksheet: Worksheet, kind: DocumentKind) -> Data {
-        let maker = PDFMaker(worksheet: worksheet, kind: kind)
+    static func render(
+        _ worksheet: Worksheet,
+        kind: DocumentKind,
+        colors: WorksheetColors = .classic
+    ) -> Data {
+        let maker = PDFMaker(worksheet: worksheet, kind: kind, colors: colors)
         let raw = maker.render()
         guard let document = PDFDocument(data: raw) else { return raw }
         let kindLabel = kind == .worksheet ? "worksheet" : "answer key"
@@ -52,19 +73,26 @@ private final class PDFMaker {
 
     var contentWidth: CGFloat { pageWidth - marginX * 2 }
 
-    let ink = platformColor(red: 0.11, green: 0.10, blue: 0.08, alpha: 1)
-    let muted = platformColor(red: 0.34, green: 0.31, blue: 0.27, alpha: 1)
-    let green = platformColor(red: 0.12, green: 0.30, blue: 0.22, alpha: 1)
-    let rule = platformColor(red: 0.72, green: 0.66, blue: 0.56, alpha: 1)
-    let box = platformColor(red: 0.965, green: 0.955, blue: 0.935, alpha: 1)
+    let ink: PlatformColor
+    let muted: PlatformColor
+    let accent: PlatformColor
+    let rule: PlatformColor
+    let box: PlatformColor
+    let paper: PlatformColor
 
     private var pages: [PaintPage] = []
     private var pageIndex = 0
     private var cursor: CGFloat = 0
 
-    init(worksheet: Worksheet, kind: DocumentKind) {
+    init(worksheet: Worksheet, kind: DocumentKind, colors: WorksheetColors) {
         self.worksheet = worksheet
         self.kind = kind
+        ink = platformColor(red: colors.ink.red, green: colors.ink.green, blue: colors.ink.blue, alpha: 1)
+        muted = platformColor(red: colors.muted.red, green: colors.muted.green, blue: colors.muted.blue, alpha: 1)
+        accent = platformColor(red: colors.accent.red, green: colors.accent.green, blue: colors.accent.blue, alpha: 1)
+        rule = platformColor(red: colors.rule.red, green: colors.rule.green, blue: colors.rule.blue, alpha: 1)
+        box = platformColor(red: colors.box.red, green: colors.box.green, blue: colors.box.blue, alpha: 1)
+        paper = platformColor(red: colors.paper.red, green: colors.paper.green, blue: colors.paper.blue, alpha: 1)
     }
 }
 
@@ -153,8 +181,9 @@ extension PDFMaker {
         pages.append(PaintPage())
         pageIndex = pages.count - 1
         cursor = top
+        fill(CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight), paper)
         if continuation {
-            fill(CGRect(x: 0, y: 0, width: pageWidth, height: 8), green)
+            fill(CGRect(x: 0, y: 0, width: pageWidth, height: 8), accent)
             let label = fit(
                 "\(kind == .answerKey ? "Answer key" : "Worksheet") · \(worksheet.meta.title) · Grade \(worksheet.meta.grade.rawValue)",
                 font: helvetica(9),
@@ -172,12 +201,12 @@ extension PDFMaker {
     }
 
     private func drawFirstHeader() {
-        fill(CGRect(x: 0, y: 0, width: pageWidth, height: 10), green)
+        fill(CGRect(x: 0, y: 0, width: pageWidth, height: 10), accent)
         let kicker = kind == .answerKey ? "ANSWER KEY" : "GRAMMAR WORKSHEET"
-        emit(kicker, x: marginX, top: cursor, font: helveticaBold(9), color: green)
+        emit(kicker, x: marginX, top: cursor, font: helveticaBold(9), color: accent)
         let grade = "Grade \(worksheet.meta.grade.rawValue)"
         let gradeWidth = width(grade, font: helveticaBold(9))
-        emit(grade, x: pageWidth - marginX - gradeWidth, top: cursor, font: helveticaBold(9), color: green)
+        emit(grade, x: pageWidth - marginX - gradeWidth, top: cursor, font: helveticaBold(9), color: accent)
         cursor += 20
         for line in wrapPlain(worksheet.meta.title, font: times(.bold, 18), maxWidth: contentWidth) {
             emit(line, x: marginX, top: cursor, font: times(.bold, 18), color: ink)
@@ -212,7 +241,7 @@ extension PDFMaker {
             )
         }
         cursor += 4
-        ruleLine(y: cursor, x1: marginX, x2: pageWidth - marginX, thickness: 0.8, color: green)
+        ruleLine(y: cursor, x1: marginX, x2: pageWidth - marginX, thickness: 0.8, color: accent)
         cursor += 14
     }
 
@@ -248,7 +277,7 @@ extension PDFMaker {
             }
         } else {
             cursor += 1
-            drawRich(answerLines, x: marginX + 22, size: 11, color: green)
+            drawRich(answerLines, x: marginX + 22, size: 11, color: accent)
             if !explanationLines.isEmpty {
                 drawRich(explanationLines, x: marginX + 22, size: 9, color: muted)
             }
@@ -262,7 +291,7 @@ extension PDFMaker {
         let font = helveticaBold(9)
         for character in text {
             let piece = String(character)
-            emit(piece, x: x, top: topY, font: font, color: green)
+            emit(piece, x: x, top: topY, font: font, color: accent)
             x += width(piece, font: font) + 0.45
         }
         cursor += 16

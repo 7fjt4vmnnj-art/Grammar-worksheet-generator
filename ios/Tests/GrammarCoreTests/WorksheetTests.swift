@@ -136,6 +136,65 @@ final class WorksheetTests: XCTestCase {
         )
     }
 
+    func testSuggestedTitleFollowsGradeAndSkills() throws {
+        let nouns = try XCTUnwrap(Catalog.skill(id: "nouns"))
+        let commas = try XCTUnwrap(Catalog.skill(id: "commas"))
+        let skills = [nouns, commas]
+        XCTAssertEqual(
+            suggestedWorksheetTitle(grade: .eight, skills: skills),
+            "Grade 8: \(skills[0].name), \(skills[1].name)"
+        )
+        XCTAssertEqual(suggestedWorksheetTitle(grade: .ten, skills: []), "Grade 10 Grammar")
+        XCTAssertEqual(
+            suggestedWorksheetTitle(grade: .twelve, skills: [skills[0]]),
+            "Grade 12: \(skills[0].name)"
+        )
+        let crowded = suggestedWorksheetTitle(grade: .nine, skills: Catalog.skills)
+        XCTAssertTrue(crowded.hasPrefix("Grade 9:"))
+        XCTAssertTrue(crowded.contains("more"))
+        XCTAssertLessThanOrEqual(crowded.count, 140)
+        XCTAssertFalse(crowded.localizedCaseInsensitiveContains("core"))
+    }
+
+    func testTitleStateRefreshesWhenSelectionChanges() {
+        let nouns = Catalog.skill(id: "nouns")!
+        let commas = Catalog.skill(id: "commas")!
+        var state = WorksheetTitleState(grade: .seven, skills: [nouns, commas])
+        XCTAssertTrue(state.followsSelection)
+        XCTAssertTrue(state.title.hasPrefix("Grade 7:"))
+        state.userEdited("Friday quiz", grade: .seven, skills: [nouns, commas])
+        XCTAssertFalse(state.followsSelection)
+        XCTAssertEqual(state.resolved(grade: .seven, skills: [nouns, commas]), "Friday quiz")
+        state.selectionChanged(grade: .eleven, skills: [nouns])
+        XCTAssertTrue(state.followsSelection)
+        XCTAssertEqual(state.title, "Grade 11: \(nouns.name)")
+        XCTAssertNotEqual(state.title, "Grade 7 core")
+        state.userEdited("   ", grade: .eleven, skills: [nouns])
+        XCTAssertEqual(state.resolved(grade: .eleven, skills: [nouns]), "Grade 11: \(nouns.name)")
+    }
+
+    func testEmptyTitleUsesGradeAndSkills() throws {
+        var input = sampleInput()
+        input.title = "   "
+        input.grade = .ten
+        input.skillIds = ["verbs"]
+        let sheet = try generateWorksheet(input)
+        let verbs = try XCTUnwrap(Catalog.skill(id: "verbs"))
+        XCTAssertEqual(sheet.meta.title, "Grade 10: \(verbs.name)")
+    }
+
+    func testWithTitleKeepsTheQuestions() throws {
+        let sheet = try generateWorksheet(sampleInput())
+        let renamed = sheet.withTitle("Unit review")
+        XCTAssertEqual(renamed.meta.title, "Unit review")
+        XCTAssertEqual(renamed.meta.grade, sheet.meta.grade)
+        let regraded = sheet.withHeader(title: "Grade 10: Nouns", grade: .ten)
+        XCTAssertEqual(regraded.meta.grade, .ten)
+        XCTAssertEqual(regraded.meta.title, "Grade 10: Nouns")
+        XCTAssertEqual(worksheetItems(renamed).map(\.answer), worksheetItems(sheet).map(\.answer))
+        XCTAssertEqual(sheet.meta.title, "Grade 7 core")
+    }
+
     func testRejectsEmptySelectionAndBadCounts() {
         XCTAssertThrowsError(try generateWorksheet(sampleInput(skillIds: [], questionCount: 10))) { error in
             XCTAssertEqual(error as? GenerateError, .noSkills)

@@ -310,10 +310,11 @@ export function countUniqueItems(difficulty: Difficulty, patterns: Pattern[]): n
     .filter(({ entry }) => entry.difficulties.includes(difficulty));
   const seen = new Set<string>();
   let stagnant = 0;
-  for (let round = 0; round < 120 && stagnant < 18; round += 1) {
+  // Wide enough to exhaust the confused-words glossary, which is several hundred items.
+  for (let round = 0; round < 320 && stagnant < 40; round += 1) {
     let added = 0;
     for (const slot of eligible) {
-      for (let n = 0; n < 10; n += 1) {
+      for (let n = 0; n < 24; n += 1) {
         const mix =
           Math.imul(round + 1, 1_000_003) +
           Math.imul(n + 3, 97) +

@@ -332,6 +332,9 @@ export const SKILLS: Skill[] = [
       "whom",
       "lay",
       "lie",
+      "homophone",
+      "hear",
+      "here",
     ],
   },
   {

@@ -270,7 +270,7 @@ extension Catalog {
             summary: "Pairs such as its/it’s, affect/effect, their/there/they’re, and who/whom.",
             directions: "Choose the word that fits the meaning and grammar of the sentence.",
             gradeBands: [.grades7to8, .grades9to10, .grades11to12],
-            keywords: ["its", "it's", "affect", "effect", "their", "there", "they're", "who", "whom", "lay", "lie"]
+            keywords: ["its", "it's", "affect", "effect", "their", "there", "they're", "who", "whom", "lay", "lie", "homophone", "hear", "here"]
         ),
         Skill(
             id: "double-negatives",

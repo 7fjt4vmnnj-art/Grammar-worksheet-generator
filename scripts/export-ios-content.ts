@@ -13,7 +13,10 @@ import { DIFFICULTIES, type Difficulty } from "../lib/types";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const iosRoot = resolve(root, "ios/Sources/GrammarCore");
 function harvestTarget(skillId: string): number {
-  if (skillId === "commas" || skillId === "subject-verb-agreement" || skillId === "confused-words") {
+  // Confused-words now holds the full glossary, so the export keeps every unique item
+  // instead of stopping at the older sample cap.
+  if (skillId === "confused-words") return 800;
+  if (skillId === "commas" || skillId === "subject-verb-agreement") {
     return 120;
   }
   return 72;
@@ -62,10 +65,13 @@ function harvest(skillId: string, difficulty: Difficulty): BankItem[] {
   const seen = new Set<string>();
   const items: BankItem[] = [];
   let stagnant = 0;
-  for (let round = 0; round < 280 && items.length < target && stagnant < 20; round += 1) {
+  const roundLimit = skillId === "confused-words" ? 420 : 280;
+  const stagnantLimit = skillId === "confused-words" ? 48 : 20;
+  const draws = skillId === "confused-words" ? 28 : 12;
+  for (let round = 0; round < roundLimit && items.length < target && stagnant < stagnantLimit; round += 1) {
     let added = 0;
     for (const slot of patterns) {
-      for (let n = 0; n < 12; n += 1) {
+      for (let n = 0; n < draws; n += 1) {
         const rng = new Rng(seedFor(round, n, slot.order, difficulty));
         const built = slot.entry.build(rng, difficulty);
         if (seen.has(built.key)) continue;

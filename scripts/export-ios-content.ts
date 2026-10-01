@@ -12,7 +12,19 @@ import { DIFFICULTIES, type Difficulty } from "../lib/types";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const iosRoot = resolve(root, "ios/Sources/GrammarCore");
-const TARGET = 36;
+function harvestTarget(skillId: string): number {
+  if (skillId === "commas" || skillId === "subject-verb-agreement" || skillId === "confused-words") {
+    return 120;
+  }
+  return 72;
+}
+
+function harvestMinimum(skillId: string): number {
+  if (skillId === "commas" || skillId === "subject-verb-agreement" || skillId === "confused-words") {
+    return 80;
+  }
+  return 40;
+}
 
 const PLACEHOLDER = /\{[a-zA-Z0-9_]+\}/;
 const STUB = /\b(TODO|lorem ipsum|placeholder|stub item)\b/i;
@@ -40,6 +52,7 @@ function seedFor(round: number, n: number, order: number, difficulty: Difficulty
 }
 
 function harvest(skillId: string, difficulty: Difficulty): BankItem[] {
+  const target = harvestTarget(skillId);
   const patterns = patternsFor(skillId)
     .map((entry, order) => ({ entry, order }))
     .filter(({ entry }) => entry.difficulties.includes(difficulty));
@@ -49,10 +62,10 @@ function harvest(skillId: string, difficulty: Difficulty): BankItem[] {
   const seen = new Set<string>();
   const items: BankItem[] = [];
   let stagnant = 0;
-  for (let round = 0; round < 100 && items.length < TARGET && stagnant < 15; round += 1) {
+  for (let round = 0; round < 280 && items.length < target && stagnant < 20; round += 1) {
     let added = 0;
     for (const slot of patterns) {
-      for (let n = 0; n < 8; n += 1) {
+      for (let n = 0; n < 12; n += 1) {
         const rng = new Rng(seedFor(round, n, slot.order, difficulty));
         const built = slot.entry.build(rng, difficulty);
         if (seen.has(built.key)) continue;
@@ -94,14 +107,15 @@ function harvest(skillId: string, difficulty: Difficulty): BankItem[] {
         if (built.choices) item.choices = built.choices;
         if (built.explanation) item.explanation = built.explanation;
         items.push(item);
-        if (items.length >= TARGET) break;
+        if (items.length >= target) break;
       }
-      if (items.length >= TARGET) break;
+      if (items.length >= target) break;
     }
     stagnant = added === 0 ? stagnant + 1 : 0;
   }
-  if (items.length < 25) {
-    throw new Error(`${skillId} at ${difficulty} only harvested ${items.length} unique items`);
+  const minimum = harvestMinimum(skillId);
+  if (items.length < minimum) {
+    throw new Error(`${skillId} at ${difficulty} only harvested ${items.length} unique items; need ${minimum}`);
   }
   items.sort((a, b) => a.order - b.order || a.key.localeCompare(b.key));
   return items;

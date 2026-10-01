@@ -11,9 +11,11 @@ final class WorksheetTests: XCTestCase {
             XCTAssertGreaterThan(skill.directions.count, 20, skill.id)
             XCTAssertFalse(skill.gradeBands.isEmpty, skill.id)
             XCTAssertFalse(skill.summary.isEmpty, skill.id)
+            let deep = ["commas", "subject-verb-agreement", "confused-words"]
             for difficulty in Difficulty.allCases {
                 let bank = ItemBank.items(skillId: skill.id, difficulty: difficulty)
-                XCTAssertGreaterThanOrEqual(bank.count, 25, "\(skill.id) \(difficulty.rawValue)")
+                let minimum = deep.contains(skill.id) ? 80 : 40
+                XCTAssertGreaterThanOrEqual(bank.count, minimum, "\(skill.id) \(difficulty.rawValue)")
             }
         }
     }

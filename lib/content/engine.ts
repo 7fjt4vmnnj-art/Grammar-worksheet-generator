@@ -1,5 +1,6 @@
 import type { Difficulty, ItemType } from "../types";
 import { Rng } from "../rng";
+import { stemsFor } from "./stems";
 
 export const BAND = {
   all: ["developing", "proficient", "advanced"] as Difficulty[],
@@ -44,6 +45,13 @@ const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function clean(value: string | undefined): string | undefined {
   if (value === undefined) return undefined;
   return value.trim();
+}
+
+/** Pick a paraphrased instruction. Item-specific prompts are left alone by the caller. */
+function chooseStem(rng: Rng, id: string, canonical: string): string {
+  const extras = stemsFor(id).filter((stem) => stem.trim() && stem.trim() !== canonical);
+  if (extras.length === 0) return canonical;
+  return rng.pick([canonical, ...extras]);
 }
 
 function defaultLines(type: ItemType): number {
@@ -104,17 +112,20 @@ export function pattern(opts: {
         const message = error instanceof Error ? error.message : String(error);
         throw new Error(`Pattern ${opts.id}: ${message}`);
       }
-      const prompt = clean(core.prompt ?? opts.prompt) ?? opts.prompt;
+      const canonical = clean(core.prompt ?? opts.prompt) ?? opts.prompt;
+      const prompt = clean(core.prompt ? canonical : chooseStem(rng, opts.id, canonical)) ?? canonical;
       const stimulus = clean(core.stimulus);
       const correct = clean(core.answer);
       const explanation = clean(core.explanation);
       if (!prompt) throw new Error(`Pattern ${opts.id} produced an empty prompt`);
       if (!correct) throw new Error(`Pattern ${opts.id} produced an empty answer`);
       const lines = core.lines ?? opts.lines ?? defaultLines(opts.type);
+      // The key uses the canonical stem so a paraphrase does not count as a new question.
+      const key = core.key ?? `${opts.id}|${stimulus ?? ""}|${canonical}|${correct}`;
       if (opts.type === "multiple-choice") {
         const built = multipleChoice(rng, correct, core.distractors, core.choices);
         return {
-          key: core.key ?? `${opts.id}|${stimulus ?? ""}|${prompt}|${correct}`,
+          key,
           type: opts.type,
           prompt,
           stimulus,
@@ -125,7 +136,7 @@ export function pattern(opts: {
         };
       }
       return {
-        key: core.key ?? `${opts.id}|${stimulus ?? ""}|${prompt}|${correct}`,
+        key,
         type: opts.type,
         prompt,
         stimulus,
@@ -265,16 +276,21 @@ export function generateFromPatterns(
   }
 
   const seen = new Set<string>();
+  const seenPrompt = new Set<string>();
   const pool: ItemDraft[] = [];
   let guard = 0;
-  const maxAttempts = Math.max(400, count * 80);
+  const maxAttempts = Math.max(800, count * 120);
   while (pool.length < count && guard < maxAttempts) {
     const slot = eligible[guard % eligible.length];
     if (!slot) break;
     guard += 1;
     const built = slot.entry.build(rng, difficulty);
-    if (seen.has(built.key)) continue;
+    const answerText =
+      built.type === "multiple-choice" ? built.answer.replace(/^[A-Z]\. /, "") : built.answer;
+    const promptFace = `${built.prompt}\u0000${built.stimulus ?? ""}\u0000${answerText}`;
+    if (seen.has(built.key) || seenPrompt.has(promptFace)) continue;
     seen.add(built.key);
+    seenPrompt.add(promptFace);
     pool.push({ ...built, order: slot.order });
   }
   if (pool.length < count) {
@@ -285,4 +301,31 @@ export function generateFromPatterns(
   const ranked = pool.map((item, index) => ({ item, index }));
   ranked.sort((a, b) => a.item.order - b.item.order || a.index - b.index);
   return ranked.slice(0, count).map((entry) => entry.item);
+}
+
+/** How many distinct questions a skill can build at one difficulty. */
+export function countUniqueItems(difficulty: Difficulty, patterns: Pattern[]): number {
+  const eligible = patterns
+    .map((entry, order) => ({ entry, order }))
+    .filter(({ entry }) => entry.difficulties.includes(difficulty));
+  const seen = new Set<string>();
+  let stagnant = 0;
+  for (let round = 0; round < 120 && stagnant < 18; round += 1) {
+    let added = 0;
+    for (const slot of eligible) {
+      for (let n = 0; n < 10; n += 1) {
+        const mix =
+          Math.imul(round + 1, 1_000_003) +
+          Math.imul(n + 3, 97) +
+          Math.imul(slot.order + 1, 131) +
+          difficulty.charCodeAt(0) * 17;
+        const built = slot.entry.build(new Rng(mix >>> 0), difficulty);
+        if (seen.has(built.key)) continue;
+        seen.add(built.key);
+        added += 1;
+      }
+    }
+    stagnant = added === 0 ? stagnant + 1 : 0;
+  }
+  return seen.size;
 }

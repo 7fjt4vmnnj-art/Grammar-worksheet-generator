@@ -244,7 +244,7 @@ private func selectItems(
         let pool = pools[order] ?? []
         if index >= pool.count { continue }
         cursors[order] = index + 1
-        picked.append(pool[index])
+        picked.append(withShuffledChoices(pool[index], rng: &rng))
     }
     if picked.count < count {
         throw GenerateError.shortBank(
@@ -262,6 +262,33 @@ private func selectItems(
             return lhs.offset < rhs.offset
         }
         .map(\.element)
+}
+
+/// Choice order is part of the seed, not part of the stored bank, so a new seed
+/// can ask the same question with the options in a different order.
+private func withShuffledChoices(_ item: BankItem, rng: inout Rng) -> BankItem {
+    guard item.type == .multipleChoice, let choices = item.choices, choices.count > 1 else {
+        return item
+    }
+    let parts = item.answer.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: false)
+    guard parts.count == 2 else { return item }
+    let correct = String(parts[1])
+    guard choices.contains(correct) else { return item }
+    let shuffled = rng.shuffle(choices)
+    guard let index = shuffled.firstIndex(of: correct), index < 26 else { return item }
+    let letter = Character(Unicode.Scalar(UInt8(65 + index)))
+    return BankItem(
+        patternId: item.patternId,
+        order: item.order,
+        type: item.type,
+        prompt: item.prompt,
+        stimulus: item.stimulus,
+        choices: shuffled,
+        lines: item.lines,
+        answer: "\(letter). \(correct)",
+        explanation: item.explanation,
+        key: item.key
+    )
 }
 
 private func slug(_ title: String) -> String {

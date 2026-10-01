@@ -359,6 +359,16 @@ const RUN_ON_PAIRS = [
   ["The essay was long", "the thesis was still clear"],
   ["The glue dried", "the crew hung the backdrop"],
   ["The caption was missing", "the graph could not be published"],
+  ["The scoreboard failed", "the referee used a watch"],
+  ["The roses wilted", "the ferns stayed green"],
+  ["The alarm sounded", "the class lined up"],
+  ["The caption was vague", "readers missed the point"],
+  ["The ice melted", "the samples warmed up"],
+  ["The curtain stuck", "the stage manager called a hold"],
+  ["The password changed", "nobody could log in"],
+  ["The trail forked", "the map gave no help"],
+  ["The soloist nodded", "the accompanist began"],
+  ["The paint peeled", "the mural needed a touch-up"],
 ] as const;
 
 export const runOnPatterns: Pattern[] = [

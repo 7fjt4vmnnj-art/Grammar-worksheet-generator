@@ -57,10 +57,14 @@ const STEMS: Record<string, readonly string[]> = {
   "mood-identify": ["Name the mood of the main verb.", "Is the mood indicative, imperative, or subjunctive?"],
   "mood-rewrite": ["Rewrite the sentence in the mood the meaning needs.", "Correct the verb mood."],
   "mood-more": ["Name the mood.", "Which mood is the main verb?"],
-  "voice-identify": ["Is the voice active or passive?", "Choose active or passive voice."],
-  "voice-to-passive": ["Rewrite the sentence in the passive voice.", "Change the sentence to passive voice without changing the tense."],
-  "voice-to-active": ["Rewrite the sentence in the active voice.", "Change the sentence to active voice without changing the tense."],
-  "voice-choice": ["Choose the sentence that fits the situation.", "Which sentence is the better choice here?"],
+  "voice-to-passive": [
+    "Name the voice, then rewrite the sentence in the opposite voice. Keep the tense the same.",
+    "Say whether the sentence is active or passive, and rewrite it in the other voice without changing the tense.",
+  ],
+  "voice-to-active": [
+    "Identify the voice of the sentence, then rewrite it in the opposite voice. Keep the tense the same.",
+    "Label the sentence active or passive, then rewrite it in the other voice. Do not change the tense.",
+  ],
   "parallel-series": ["Make the series parallel.", "Rewrite the sentence so the series uses matching forms."],
   "parallel-choice": ["Choose the parallel revision.", "Which revision makes the forms match?"],
   "parallel-correlative": ["Make the correlative pair parallel.", "Rewrite the sentence so both sides of the pair match."],

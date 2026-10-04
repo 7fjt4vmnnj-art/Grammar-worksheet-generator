@@ -433,7 +433,7 @@ export const doubleNegativePatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the sentence so it has only one negative and keeps the same meaning.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const rows = [
@@ -634,7 +634,7 @@ export const registerPatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the sentence in a formal academic register. Keep the meaning.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const [stimulus, answer, explanation] = rng.pick(FORMAL);
       return {

@@ -254,8 +254,10 @@ private struct PaperPreview: View {
                                     .stroke(page.rule, lineWidth: 0.6)
                             )
                     }
-                    ForEach(section.items) { item in
-                        itemView(item)
+                    VStack(alignment: .leading, spacing: answerKey ? 10 : 18) {
+                        ForEach(section.items) { item in
+                            itemView(item)
+                        }
                     }
                 }
                 .padding(.top, 8)
@@ -322,15 +324,15 @@ private struct PaperPreview: View {
                             .font(.footnote)
                             .foregroundStyle(page.muted)
                     }
-                } else if item.choices == nil {
-                    VStack(spacing: 14) {
-                        ForEach(0..<item.lines, id: \.self) { _ in
-                            Rectangle()
-                                .fill(page.rule)
-                                .frame(height: 1)
-                        }
+                } else if answerLineCount(type: item.type, lines: item.lines) > 0 {
+                    ZStack(alignment: .bottom) {
+                        Color.clear
+                        Rectangle()
+                            .fill(page.rule)
+                            .frame(height: 1)
                     }
-                    .padding(.top, 10)
+                    .frame(height: 28)
+                    .padding(.top, 4)
                 }
             }
         }

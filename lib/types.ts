@@ -23,6 +23,12 @@ export type ItemType =
   | "rewrite"
   | "edit";
 
+/** Written responses get one ruled line. Choice items stay at zero. */
+export function answerLineCount(type: ItemType, lines: number): number {
+  if (type === "multiple-choice" || lines <= 0) return 0;
+  return 1;
+}
+
 export interface Category {
   id: CategoryId;
   name: string;

@@ -2,14 +2,15 @@ import { getSkill } from "./catalog";
 import { patternsFor } from "./content";
 import { generateFromPatterns } from "./content/engine";
 import { Rng } from "./rng";
-import type {
-  Difficulty,
-  GenerateInput,
-  Grade,
-  Skill,
-  Worksheet,
-  WorksheetItem,
-  WorksheetSection,
+import {
+  answerLineCount,
+  type Difficulty,
+  type GenerateInput,
+  type Grade,
+  type Skill,
+  type Worksheet,
+  type WorksheetItem,
+  type WorksheetSection,
 } from "./types";
 import { DIFFICULTY_LABEL } from "./types";
 
@@ -79,7 +80,7 @@ export function generateWorksheet(input: GenerateInput): Worksheet {
       prompt: draft.prompt,
       stimulus: draft.stimulus,
       choices: draft.choices,
-      lines: draft.lines,
+      lines: answerLineCount(draft.type, draft.lines),
       answer: draft.answer,
       explanation: draft.explanation,
     }));

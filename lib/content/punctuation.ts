@@ -63,7 +63,7 @@ function commaRewrite(
     difficulties: BAND.all,
     type: "rewrite",
     prompt,
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const [bad, good, why] = rng.pick(rows);
@@ -235,7 +235,7 @@ export const quotationPatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the sentence with correct dialogue punctuation.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const [bad, good, why] = rng.pick(QUOTE_FRAMES);
@@ -248,7 +248,7 @@ export const quotationPatterns: Pattern[] = [
     difficulties: BAND.upper,
     type: "rewrite",
     prompt: "Rewrite the sentence with correct quotation punctuation.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const [bad, good, why] = rng.pick(QUOTE_ADVANCED);
@@ -324,7 +324,7 @@ export const titlePatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the sentence, punctuating the title correctly. Use *asterisks* to show italics.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const [stimulus, answer, explanation] = rng.pick(TITLES);
       return { stimulus, answer, explanation, key: stimulus };

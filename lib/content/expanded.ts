@@ -338,7 +338,7 @@ export const extraFragments: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the fragment as a complete sentence.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const [stimulus, answer, explanation] = rng.pick(MORE_FRAGMENTS);
       return {
@@ -490,7 +490,7 @@ export const extraTitles: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the sentence, punctuating the title correctly. Use *asterisks* to show italics.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const [stimulus, answer, explanation] = rng.pick(MORE_TITLES);
       return { stimulus, answer, explanation, key: stimulus };
@@ -658,7 +658,7 @@ export const extraRegister: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the sentence in a formal academic register. Keep the meaning.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const rows = [
         ["The lab write-up was a mess because the group kinda guessed the units.", "The lab report was unclear because the group estimated the units.", "Formal writing replaces a mess and kinda guessed with precise wording."],
@@ -792,7 +792,7 @@ export const extraCommas: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the sentence, adding commas to set off a name used in direct address.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const rows = [

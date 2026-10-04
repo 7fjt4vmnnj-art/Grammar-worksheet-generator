@@ -68,7 +68,7 @@ describe("item banks", () => {
             assert.equal(item.choices?.[letter.charCodeAt(0) - 65], text);
           } else {
             assert.equal(item.choices, undefined);
-            assert.ok(item.lines > 0);
+            assert.equal(item.lines, 1);
           }
           if (item.type === "rewrite" || item.type === "edit") {
             assert.ok((item.explanation ?? "").length > 12, `${skill.id}: ${item.stimulus ?? item.prompt}`);
@@ -80,6 +80,38 @@ describe("item banks", () => {
 });
 
 const DEEP_POOLS = new Set(["commas", "subject-verb-agreement", "confused-words"]);
+
+describe("active vs. passive voice", () => {
+  it("asks each item to identify the voice and rewrite it in the opposite voice", () => {
+    const skill = SKILLS.find((entry) => entry.id === "active-passive");
+    assert.ok(skill);
+    assert.match(skill.directions, /opposite voice/i);
+    assert.match(skill.summary, /opposite voice/i);
+    for (const difficulty of DIFFICULTIES) {
+      const items = generateFromPatterns(new Rng(7), difficulty, 25, patternsFor("active-passive"));
+      assert.equal(items.length, 25);
+      for (const item of items) {
+        assert.equal(item.type, "rewrite");
+        assert.equal(item.lines, 1);
+        assert.equal(item.choices, undefined);
+        assert.match(item.prompt, /rewrite/i);
+        assert.match(item.prompt, /opposite voice|other voice/i);
+        assert.match(item.prompt, /active or passive|the voice/i);
+        assert.match(item.answer, /^(Active|Passive)\. .+/);
+        const rewrite = item.answer.replace(/^(Active|Passive)\. /, "");
+        assert.notEqual(rewrite, item.stimulus);
+        if (item.answer.startsWith("Active.")) {
+          assert.doesNotMatch(item.stimulus ?? "", / by /);
+          assert.match(rewrite, / by /);
+        } else {
+          assert.match(item.stimulus ?? "", / by /);
+          assert.doesNotMatch(rewrite, / by /);
+        }
+        assert.ok((item.explanation ?? "").length > 12);
+      }
+    }
+  });
+});
 
 describe("item variety", () => {
   it("keeps a deep unique pool for every skill and difficulty", () => {

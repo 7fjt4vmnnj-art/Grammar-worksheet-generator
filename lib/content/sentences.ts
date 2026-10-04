@@ -331,7 +331,7 @@ export const fragmentPatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the fragment as a complete sentence.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const [stimulus, answer, explanation] = rng.pick(FRAGMENTS);
       return {
@@ -395,7 +395,7 @@ export const runOnPatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the run-on as two sentences.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const [a, b] = rng.pick(RUN_ON_PAIRS);
       return {
@@ -411,7 +411,7 @@ export const runOnPatterns: Pattern[] = [
     difficulties: BAND.upper,
     type: "rewrite",
     prompt: "Rewrite the run-on using a semicolon and no coordinating conjunction.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const [a, b] = rng.pick(RUN_ON_PAIRS);
       return {
@@ -427,7 +427,7 @@ export const runOnPatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the run-on as one compound sentence with a comma and and.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const [a, b] = rng.pick(RUN_ON_PAIRS);
       return {
@@ -474,7 +474,7 @@ export const modifierPatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the sentence so the opening modifier has a clear subject.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const [bad, good, why] = rng.pick(DANGLING);
@@ -492,7 +492,7 @@ export const modifierPatterns: Pattern[] = [
     difficulties: BAND.upper,
     type: "rewrite",
     prompt: "Rewrite the sentence so the modifier sits next to the word it is meant to describe.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const [bad, good, intention, why] = rng.pick(MISPLACED);
@@ -529,7 +529,7 @@ export const combiningPatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Combine the sentences as the directions inside the item require.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const row = rng.pick(COMBINING.slice(0, 10));
@@ -548,7 +548,7 @@ export const combiningPatterns: Pattern[] = [
     difficulties: BAND.adv,
     type: "rewrite",
     prompt: "Combine the sentences as the directions inside the item require.",
-    lines: 3,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const row = rng.pick(COMBINING.slice(10));

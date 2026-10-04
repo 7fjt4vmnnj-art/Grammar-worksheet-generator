@@ -62,7 +62,7 @@ final class WorksheetTests: XCTestCase {
                         XCTAssertEqual(choices[index], String(parts[1]), "\(skill.id) \(item.answer)")
                     } else {
                         XCTAssertNil(item.choices)
-                        XCTAssertGreaterThan(item.lines, 0)
+                        XCTAssertEqual(item.lines, 1)
                     }
                     if item.type == .rewrite || item.type == .edit {
                         XCTAssertGreaterThan(item.explanation?.count ?? 0, 12, skill.id)
@@ -97,6 +97,56 @@ final class WorksheetTests: XCTestCase {
         XCTAssertEqual(sheet.meta.teacher, "Ms. Okonkwo")
         XCTAssertEqual(fileSlug(title: sheet.meta.title, grade: .seven, kind: .worksheet), "grade-7-grade-7-core-worksheet.pdf")
         XCTAssertEqual(fileSlug(title: sheet.meta.title, grade: .seven, kind: .answerKey), "grade-7-grade-7-core-answer-key.pdf")
+    }
+
+    func testActivePassiveItemsIdentifyAndRewriteOppositeVoice() throws {
+        let skill = try XCTUnwrap(Catalog.skill(id: "active-passive"))
+        XCTAssertTrue(skill.directions.localizedCaseInsensitiveContains("opposite voice"))
+        XCTAssertTrue(skill.summary.localizedCaseInsensitiveContains("opposite voice"))
+        for difficulty in Difficulty.allCases {
+            let sheet = try generateWorksheet(
+                GenerateInput(
+                    grade: .ten,
+                    skillIds: ["active-passive"],
+                    questionCount: 25,
+                    difficulty: difficulty,
+                    includeDirections: true,
+                    title: "Active vs. passive voice",
+                    teacher: "",
+                    className: "",
+                    date: "",
+                    seed: 7
+                )
+            )
+            let items = worksheetItems(sheet)
+            XCTAssertEqual(items.count, 25)
+            for item in items {
+                XCTAssertEqual(item.type, .rewrite)
+                XCTAssertEqual(item.lines, 1)
+                XCTAssertNil(item.choices)
+                XCTAssertTrue(item.prompt.localizedCaseInsensitiveContains("rewrite"), item.prompt)
+                let asksForOpposite = item.prompt.localizedCaseInsensitiveContains("opposite voice")
+                    || item.prompt.localizedCaseInsensitiveContains("other voice")
+                XCTAssertTrue(asksForOpposite, item.prompt)
+                XCTAssertTrue(
+                    item.prompt.localizedCaseInsensitiveContains("active or passive")
+                        || item.prompt.localizedCaseInsensitiveContains("the voice"),
+                    item.prompt
+                )
+                XCTAssertTrue(item.answer.hasPrefix("Active. ") || item.answer.hasPrefix("Passive. "), item.answer)
+                let rewrite = item.answer.hasPrefix("Active. ")
+                    ? String(item.answer.dropFirst("Active. ".count))
+                    : String(item.answer.dropFirst("Passive. ".count))
+                XCTAssertNotEqual(rewrite, item.stimulus)
+                if item.answer.hasPrefix("Active. ") {
+                    XCTAssertFalse(item.stimulus?.contains(" by ") == true, item.stimulus ?? "")
+                    XCTAssertTrue(rewrite.contains(" by "), rewrite)
+                } else {
+                    XCTAssertTrue(item.stimulus?.contains(" by ") == true, item.stimulus ?? "")
+                    XCTAssertFalse(rewrite.contains(" by "), rewrite)
+                }
+            }
+        }
     }
 
     func testRecommendedBandsAndDifficultyDefaults() throws {

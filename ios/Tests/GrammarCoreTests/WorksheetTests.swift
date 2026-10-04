@@ -146,7 +146,70 @@ final class WorksheetTests: XCTestCase {
                     XCTAssertFalse(rewrite.contains(" by "), rewrite)
                 }
             }
+            let layouts = layoutItemPrompts(
+                items.map { (prompt: $0.prompt, stimulus: $0.stimulus) },
+                includeDirections: true,
+                directionsCoverItems: directionsCoverItemPrompts("active-passive")
+            )
+            XCTAssertEqual(layouts.count, items.count)
+            XCTAssertTrue(layouts.allSatisfy { $0.prompt.isEmpty && $0.groupPrompt.isEmpty })
         }
+    }
+
+    func testRepeatedInstructionsPrintOnce() {
+        let repeated = layoutItemPrompts(
+            [
+                (prompt: "Rewrite the run-on as two sentences.", stimulus: "The bell rang the hall filled."),
+                (prompt: "Rewrite the run-on as two sentences.", stimulus: "The paint peeled the mural faded."),
+                (
+                    prompt: "Rewrite the run-on using a semicolon and no coordinating conjunction.",
+                    stimulus: "The solo ended the applause started."
+                ),
+            ],
+            includeDirections: true,
+            directionsCoverItems: false
+        )
+        XCTAssertEqual(repeated[0].groupPrompt, "Rewrite the run-on as two sentences.")
+        XCTAssertEqual(repeated[0].prompt, "")
+        XCTAssertEqual(repeated[1].prompt, "")
+        XCTAssertEqual(repeated[1].groupPrompt, "")
+        XCTAssertEqual(repeated[2].prompt, "Rewrite the run-on using a semicolon and no coordinating conjunction.")
+        XCTAssertEqual(repeated[2].groupPrompt, "")
+
+        let covered = layoutItemPrompts(
+            [
+                (prompt: "Identify the voice.", stimulus: "Maya painted the mural."),
+                (prompt: "Identify the voice.", stimulus: "The mural was painted by Maya."),
+            ],
+            includeDirections: true,
+            directionsCoverItems: true
+        )
+        XCTAssertTrue(covered.allSatisfy { $0.prompt.isEmpty && $0.groupPrompt.isEmpty })
+
+        let questions = layoutItemPrompts(
+            [
+                (prompt: "Which sentence is a comma splice?", stimulus: nil),
+                (prompt: "Which sentence is a comma splice?", stimulus: nil),
+            ],
+            includeDirections: true,
+            directionsCoverItems: false
+        )
+        XCTAssertEqual(questions[0].prompt, "Which sentence is a comma splice?")
+        XCTAssertEqual(questions[1].prompt, "Which sentence is a comma splice?")
+        XCTAssertEqual(questions[0].groupPrompt, "")
+        XCTAssertEqual(questions[1].groupPrompt, "")
+
+        let withoutDirections = layoutItemPrompts(
+            [
+                (prompt: "Identify the voice.", stimulus: "Maya painted the mural."),
+                (prompt: "Identify the voice.", stimulus: "The mural was painted by Maya."),
+            ],
+            includeDirections: false,
+            directionsCoverItems: true
+        )
+        XCTAssertEqual(withoutDirections[0].groupPrompt, "Identify the voice.")
+        XCTAssertEqual(withoutDirections[1].prompt, "")
+        XCTAssertEqual(withoutDirections[1].groupPrompt, "")
     }
 
     func testRecommendedBandsAndDifficultyDefaults() throws {

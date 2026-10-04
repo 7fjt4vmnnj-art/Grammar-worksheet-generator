@@ -6,7 +6,8 @@ import {
   rgb,
   type RGB,
 } from "pdf-lib";
-import { answerLineCount, type Worksheet, type WorksheetItem } from "./types";
+import { directionsCoverItemPrompts } from "./catalog";
+import { answerLineCount, layoutItemPrompts, type Worksheet, type WorksheetItem } from "./types";
 import { DIFFICULTY_LABEL } from "./types";
 import { parseRich, type RichSpan, type RichStyle } from "./rich";
 
@@ -74,12 +75,18 @@ export async function buildPdf(worksheet: Worksheet, kind: Kind): Promise<Uint8A
       drawBox(pen, section.directions);
       pen.cursor -= 8;
     }
+    const laidOut = layoutItemPrompts(
+      section.items,
+      worksheet.meta.includeDirections,
+      directionsCoverItemPrompts(section.skillId),
+    );
     section.items.forEach((item, index) => {
-      const previous = section.items[index - 1];
+      const layout = laidOut[index] ?? { prompt: "", groupPrompt: "" };
       const promptGap = pen.kind === "worksheet" ? WORKSHEET_PROMPT_GAP : ANSWER_KEY_PROMPT_GAP;
       const itemGap = pen.kind === "worksheet" ? WORKSHEET_ITEM_GAP : ANSWER_KEY_ITEM_GAP;
-      if (previous && previous.prompt !== item.prompt) pen.cursor -= promptGap;
-      drawItem(pen, item);
+      if (index > 0 && (layout.groupPrompt || layout.prompt)) pen.cursor -= promptGap;
+      if (layout.groupPrompt) drawLead(pen, layout.groupPrompt);
+      drawItem(pen, item, layout.prompt);
       pen.cursor -= itemGap;
     });
     pen.cursor -= 6;
@@ -192,8 +199,10 @@ function drawFirstHeader(pen: Pen) {
   pen.cursor -= 14;
 }
 
-function drawItem(pen: Pen, item: WorksheetItem) {
-  const promptLines = wrapRich(parseRich(item.prompt), pen.fonts, 11, CONTENT_WIDTH - 22);
+function drawItem(pen: Pen, item: WorksheetItem, prompt: string) {
+  const promptLines = prompt.trim()
+    ? wrapRich(parseRich(prompt), pen.fonts, 11, CONTENT_WIDTH - 22)
+    : [];
   const stimulusLines = item.stimulus
     ? wrapRich(parseRich(item.stimulus), pen.fonts, 11, CONTENT_WIDTH - 22)
     : [];
@@ -229,9 +238,9 @@ function drawItem(pen: Pen, item: WorksheetItem) {
     font: pen.fonts.bold,
     color: INK,
   });
-  drawRich(pen, promptLines, MARGIN_X + 22, 11, INK);
+  if (promptLines.length) drawRich(pen, promptLines, MARGIN_X + 22, 11, INK);
   if (stimulusLines.length) {
-    pen.cursor -= 2;
+    if (promptLines.length) pen.cursor -= 2;
     drawRich(pen, stimulusLines, MARGIN_X + 22, 11, INK);
   }
   choiceBlocks.forEach((lines, index) => {
@@ -260,6 +269,17 @@ function drawItem(pen: Pen, item: WorksheetItem) {
     });
     pen.cursor -= WRITE_IN_TRAIL;
   }
+}
+
+function drawLead(pen: Pen, text: string) {
+  const spans = parseRich(text).map((span) => ({
+    text: span.text,
+    style: span.style === "regular" ? ("italic" as const) : span.style === "bold" ? ("bolditalic" as const) : span.style,
+  }));
+  const lines = wrapRich(spans, pen.fonts, 11, CONTENT_WIDTH);
+  ensure(pen, lines.length * 15 + 6 + 120);
+  drawRich(pen, lines, MARGIN_X, 11, INK);
+  pen.cursor -= 6;
 }
 
 function drawTracked(pen: Pen, text: string) {

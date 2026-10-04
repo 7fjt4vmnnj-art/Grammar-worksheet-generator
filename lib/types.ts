@@ -29,6 +29,42 @@ export function answerLineCount(type: ItemType, lines: number): number {
   return 1;
 }
 
+export interface ItemPromptLayout {
+  /** Instruction printed with this question. Empty when a heading or the section directions already said it. */
+  prompt: string;
+  /** Shared instruction printed once above this question and the later questions that use it. */
+  groupPrompt: string;
+}
+
+/**
+ * Section directions are the skill instruction. When a sentence (stimulus) is already
+ * on the item, a prompt shared by the following items is printed once above that run.
+ * A prompt with no sentence under it is the question, so it stays on every item.
+ */
+export function layoutItemPrompts(
+  items: readonly { prompt: string; stimulus?: string }[],
+  includeDirections: boolean,
+  directionsCoverItems: boolean,
+): ItemPromptLayout[] {
+  const trimmed = items.map((item) => item.prompt.trim());
+  const hasStimulus = items.map((item) => Boolean(item.stimulus?.trim()));
+  const hideAll = includeDirections && directionsCoverItems;
+  return items.map((item, index) => {
+    const current = trimmed[index] ?? "";
+    if (!current || hideAll) return { prompt: "", groupPrompt: "" };
+    if (!hasStimulus[index]) return { prompt: item.prompt, groupPrompt: "" };
+    const previousSame =
+      index > 0 && Boolean(hasStimulus[index - 1]) && (trimmed[index - 1] ?? "") === current;
+    if (previousSame) return { prompt: "", groupPrompt: "" };
+    const nextSame =
+      index + 1 < items.length &&
+      Boolean(hasStimulus[index + 1]) &&
+      (trimmed[index + 1] ?? "") === current;
+    if (nextSame) return { prompt: "", groupPrompt: item.prompt };
+    return { prompt: item.prompt, groupPrompt: "" };
+  });
+}
+
 export interface Category {
   id: CategoryId;
   name: string;

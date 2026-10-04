@@ -130,15 +130,24 @@ extension PDFMaker {
                 drawBox(section.directions)
                 cursor += 8
             }
-            var previousPrompt: String?
+            let layouts = layoutItemPrompts(
+                section.items.map { (prompt: $0.prompt, stimulus: $0.stimulus) },
+                includeDirections: worksheet.meta.includeDirections,
+                directionsCoverItems: directionsCoverItemPrompts(section.skillId)
+            )
             let promptGap = kind == .worksheet ? worksheetPromptGap : answerKeyPromptGap
             let itemGap = kind == .worksheet ? worksheetItemGap : answerKeyItemGap
-            for item in section.items {
-                if let previousPrompt, previousPrompt != item.prompt {
+            for (index, item) in section.items.enumerated() {
+                let layout = index < layouts.count
+                    ? layouts[index]
+                    : ItemPromptLayout(prompt: "", groupPrompt: "")
+                if index > 0 && (!layout.groupPrompt.isEmpty || !layout.prompt.isEmpty) {
                     cursor += promptGap
                 }
-                previousPrompt = item.prompt
-                drawItem(item)
+                if !layout.groupPrompt.isEmpty {
+                    drawLead(layout.groupPrompt)
+                }
+                drawItem(item, prompt: layout.prompt)
                 cursor += itemGap
             }
             cursor += 6
@@ -253,8 +262,10 @@ extension PDFMaker {
         cursor += 14
     }
 
-    private func drawItem(_ item: WorksheetItem) {
-        let promptLines = wrapRich(parseRich(item.prompt), size: 11, maxWidth: contentWidth - 22)
+    private func drawItem(_ item: WorksheetItem, prompt: String) {
+        let promptLines = prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? []
+            : wrapRich(parseRich(prompt), size: 11, maxWidth: contentWidth - 22)
         let stimulusLines = item.stimulus.map { wrapRich(parseRich($0), size: 11, maxWidth: contentWidth - 22) } ?? []
         let choiceBlocks = (item.choices ?? []).map { wrapRich(parseRich($0), size: 11, maxWidth: contentWidth - 40) }
         let answerLines = kind == .answerKey
@@ -265,9 +276,13 @@ extension PDFMaker {
             : []
         ensure(min(120, 36))
         emit("\(item.number).", x: marginX, top: cursor, font: times(.bold, 11), color: ink)
-        drawRich(promptLines, x: marginX + 22, size: 11, color: ink)
+        if !promptLines.isEmpty {
+            drawRich(promptLines, x: marginX + 22, size: 11, color: ink)
+        }
         if !stimulusLines.isEmpty {
-            cursor += 2
+            if !promptLines.isEmpty {
+                cursor += 2
+            }
             drawRich(stimulusLines, x: marginX + 22, size: 11, color: ink)
         }
         for (index, lines) in choiceBlocks.enumerated() {
@@ -288,6 +303,25 @@ extension PDFMaker {
             ruleLine(y: cursor, x1: marginX + 22, x2: pageWidth - marginX, thickness: 0.6, color: rule)
             cursor += writeInTrail
         }
+    }
+
+    private func drawLead(_ text: String) {
+        let spans = parseRich(text).map { span -> RichSpan in
+            let style: RichStyle
+            switch span.style {
+            case .regular:
+                style = .italic
+            case .bold:
+                style = .boldItalic
+            default:
+                style = span.style
+            }
+            return RichSpan(text: span.text, style: style)
+        }
+        let lines = wrapRich(spans, size: 11, maxWidth: contentWidth)
+        ensure(CGFloat(lines.count) * 15 + 6 + 120)
+        drawRich(lines, x: marginX, size: 11, color: ink)
+        cursor += 6
     }
 
     private func drawTracked(_ text: String) {

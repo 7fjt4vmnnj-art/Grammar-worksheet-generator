@@ -277,7 +277,7 @@ extension Catalog {
             name: "Double negatives",
             category: .usage,
             summary: "Sentences that stack two negatives and how to say them once.",
-            directions: "Rewrite so the sentence has only one negative and keeps the original meaning. Follow the wording the item asks you to keep.",
+            directions: "Rewrite so the sentence has only one negative and keeps the original meaning.",
             gradeBands: [.grades7to8, .grades9to10],
             keywords: ["negative", "hardly", "scarcely", "not no"]
         ),

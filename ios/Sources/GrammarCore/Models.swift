@@ -227,6 +227,68 @@ public struct GenerateInput: Equatable, Sendable {
     }
 }
 
+public struct ItemPromptLayout: Equatable, Sendable {
+    public var prompt: String
+    public var groupPrompt: String
+
+    public init(prompt: String, groupPrompt: String) {
+        self.prompt = prompt
+        self.groupPrompt = groupPrompt
+    }
+}
+
+/// Skills whose section directions already tell students what to do on every item.
+/// Keep this list in sync with `SHARED_DIRECTION_SKILL_IDS` in lib/catalog.ts.
+public let sharedDirectionSkillIds: Set<String> = [
+    "active-passive",
+    "sentence-types",
+    "phrases",
+    "end-punctuation",
+    "semicolons-colons",
+    "titles",
+    "confused-words",
+    "double-negatives",
+    "capitalization",
+]
+
+public func directionsCoverItemPrompts(_ skillId: String) -> Bool {
+    sharedDirectionSkillIds.contains(skillId)
+}
+
+/// Section directions are the skill instruction. When a sentence is already on the item,
+/// a prompt shared by the following items is printed once above that run. A prompt with
+/// no sentence under it is the question, so it stays on every item.
+public func layoutItemPrompts(
+    _ items: [(prompt: String, stimulus: String?)],
+    includeDirections: Bool,
+    directionsCoverItems: Bool
+) -> [ItemPromptLayout] {
+    let trimmed = items.map { $0.prompt.trimmingCharacters(in: .whitespacesAndNewlines) }
+    let hasStimulus = items.map { item in
+        guard let stimulus = item.stimulus else { return false }
+        return !stimulus.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    let hideAll = includeDirections && directionsCoverItems
+    return items.enumerated().map { index, item in
+        let current = trimmed[index]
+        if current.isEmpty || hideAll {
+            return ItemPromptLayout(prompt: "", groupPrompt: "")
+        }
+        if !hasStimulus[index] {
+            return ItemPromptLayout(prompt: item.prompt, groupPrompt: "")
+        }
+        let previousSame = index > 0 && hasStimulus[index - 1] && trimmed[index - 1] == current
+        if previousSame {
+            return ItemPromptLayout(prompt: "", groupPrompt: "")
+        }
+        let nextSame = index + 1 < items.count && hasStimulus[index + 1] && trimmed[index + 1] == current
+        if nextSame {
+            return ItemPromptLayout(prompt: "", groupPrompt: item.prompt)
+        }
+        return ItemPromptLayout(prompt: item.prompt, groupPrompt: "")
+    }
+}
+
 public enum GenerateError: Error, Equatable {
     case noSkills
     case questionCount

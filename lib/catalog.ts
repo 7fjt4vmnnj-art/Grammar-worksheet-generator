@@ -343,7 +343,7 @@ export const SKILLS: Skill[] = [
     category: "usage",
     summary: "Sentences that stack two negatives and how to say them once.",
     directions:
-      "Rewrite so the sentence has only one negative and keeps the original meaning. Follow the wording the item asks you to keep.",
+      "Rewrite so the sentence has only one negative and keeps the original meaning.",
     gradeBands: ["7-8", "9-10"],
     keywords: ["negative", "hardly", "scarcely", "not no"],
   },
@@ -403,4 +403,24 @@ export function isRecommended(skill: Skill, grade: Grade): boolean {
 
 export function skillsInCategory(category: Category["id"]): Skill[] {
   return SKILLS.filter((skill) => skill.category === category);
+}
+
+/**
+ * Skills whose section directions already tell students what to do on every item.
+ * Keep this list in sync with `sharedDirectionSkillIds` in the iOS models.
+ */
+export const SHARED_DIRECTION_SKILL_IDS = [
+  "active-passive",
+  "sentence-types",
+  "phrases",
+  "end-punctuation",
+  "semicolons-colons",
+  "titles",
+  "confused-words",
+  "double-negatives",
+  "capitalization",
+] as const;
+
+export function directionsCoverItemPrompts(skillId: string): boolean {
+  return (SHARED_DIRECTION_SKILL_IDS as readonly string[]).includes(skillId);
 }

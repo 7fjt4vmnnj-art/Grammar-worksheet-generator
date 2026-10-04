@@ -254,11 +254,7 @@ private struct PaperPreview: View {
                                     .stroke(page.rule, lineWidth: 0.6)
                             )
                     }
-                    VStack(alignment: .leading, spacing: answerKey ? 10 : 18) {
-                        ForEach(section.items) { item in
-                            itemView(item)
-                        }
-                    }
+                    itemsBlock(section)
                 }
                 .padding(.top, 8)
             }
@@ -288,15 +284,37 @@ private struct PaperPreview: View {
         .joined(separator: "  ·  ")
     }
 
-    private func itemView(_ item: WorksheetItem) -> some View {
+    private func itemsBlock(_ section: WorksheetSection) -> some View {
+        let layouts = layoutItemPrompts(
+            section.items.map { (prompt: $0.prompt, stimulus: $0.stimulus) },
+            includeDirections: worksheet.meta.includeDirections,
+            directionsCoverItems: directionsCoverItemPrompts(section.skillId)
+        )
+        return VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(section.items.enumerated()), id: \.element.id) { index, item in
+                VStack(alignment: .leading, spacing: 8) {
+                    if index < layouts.count, !layouts[index].groupPrompt.isEmpty {
+                        richText(layouts[index].groupPrompt)
+                            .font(.system(.body, design: .serif).italic())
+                    }
+                    itemView(item, prompt: index < layouts.count ? layouts[index].prompt : "")
+                }
+                .padding(.top, index == 0 ? 0 : (answerKey ? 10 : 18))
+            }
+        }
+    }
+
+    private func itemView(_ item: WorksheetItem, prompt: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text("\(item.number).")
                 .font(.system(.body, design: .serif).weight(.semibold))
                 .frame(width: 28, alignment: .trailing)
             VStack(alignment: .leading, spacing: 6) {
-                richText(item.prompt)
-                    .font(.system(.body, design: .serif))
-                    .foregroundStyle(page.ink)
+                if !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    richText(prompt)
+                        .font(.system(.body, design: .serif))
+                        .foregroundStyle(page.ink)
+                }
                 if let stimulus = item.stimulus {
                     richText(stimulus)
                         .font(.system(.body, design: .serif))

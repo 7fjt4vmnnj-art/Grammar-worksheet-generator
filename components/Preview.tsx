@@ -1,4 +1,5 @@
-import { answerLineCount, type Worksheet } from "@/lib/types";
+import { directionsCoverItemPrompts } from "@/lib/catalog";
+import { answerLineCount, layoutItemPrompts, type Worksheet } from "@/lib/types";
 import { DIFFICULTY_LABEL } from "@/lib/types";
 import { parseRich, type RichSpan } from "@/lib/rich";
 
@@ -70,50 +71,67 @@ export default function Preview({
               {section.directions}
             </p>
           ) : null}
-          <ol className={answerKey ? "mt-4 space-y-5" : "mt-4 space-y-8"}>
-            {section.items.map((item) => (
-              <li key={item.number} className="grid grid-cols-[2rem_1fr] gap-2">
-                <span className="font-serif font-semibold">{item.number}.</span>
-                <div className="font-serif text-[15px] leading-6">
-                  <p>
-                    <Rich text={item.prompt} />
-                  </p>
-                  {item.stimulus ? (
-                    <p className="mt-1">
-                      <Rich text={item.stimulus} />
+          <div className="mt-4">
+            {layoutItemPrompts(
+              section.items,
+              meta.includeDirections,
+              directionsCoverItemPrompts(section.skillId),
+            ).map((layout, index) => {
+              const item = section.items[index];
+              if (!item) return null;
+              return (
+                <div key={item.number} className={index === 0 ? undefined : answerKey ? "mt-5" : "mt-8"}>
+                  {layout.groupPrompt ? (
+                    <p className="mb-3 font-serif text-[15px] italic leading-6">
+                      <Rich text={layout.groupPrompt} />
                     </p>
                   ) : null}
-                  {item.choices ? (
-                    <ul className="mt-1 space-y-0.5">
-                      {item.choices.map((choice, index) => (
-                        <li key={`${item.number}-${choice}`} className="grid grid-cols-[1.5rem_1fr]">
-                          <span className="font-semibold">{String.fromCharCode(65 + index)}.</span>
-                          <span>
-                            <Rich text={choice} />
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {!answerKey && answerLineCount(item.type, item.lines) > 0 ? (
-                    <div className="paper-rule" />
-                  ) : null}
-                  {answerKey ? (
-                    <div className="mt-1">
-                      <p className="font-semibold text-moss">
-                        Answer: <Rich text={item.answer.replace(/^[A-H]\. /, (match) => match)} />
-                      </p>
-                      {item.explanation ? (
-                        <p className="text-sm italic text-ink/70">
-                          <Rich text={item.explanation} />
+                  <div className="grid grid-cols-[2rem_1fr] gap-2">
+                    <span className="font-serif font-semibold">{item.number}.</span>
+                    <div className="font-serif text-[15px] leading-6">
+                      {layout.prompt ? (
+                        <p>
+                          <Rich text={layout.prompt} />
                         </p>
                       ) : null}
+                      {item.stimulus ? (
+                        <p className={layout.prompt ? "mt-1" : undefined}>
+                          <Rich text={item.stimulus} />
+                        </p>
+                      ) : null}
+                      {item.choices ? (
+                        <ul className="mt-1 space-y-0.5">
+                          {item.choices.map((choice, choiceIndex) => (
+                            <li key={`${item.number}-${choice}`} className="grid grid-cols-[1.5rem_1fr]">
+                              <span className="font-semibold">{String.fromCharCode(65 + choiceIndex)}.</span>
+                              <span>
+                                <Rich text={choice} />
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      {!answerKey && answerLineCount(item.type, item.lines) > 0 ? (
+                        <div className="paper-rule" />
+                      ) : null}
+                      {answerKey ? (
+                        <div className="mt-1">
+                          <p className="font-semibold text-moss">
+                            Answer: <Rich text={item.answer.replace(/^[A-H]\. /, (match) => match)} />
+                          </p>
+                          {item.explanation ? (
+                            <p className="text-sm italic text-ink/70">
+                              <Rich text={item.explanation} />
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
+                  </div>
                 </div>
-              </li>
-            ))}
-          </ol>
+              );
+            })}
+          </div>
         </section>
       ))}
       <footer className="mt-8 flex items-end justify-between gap-4 border-t border-line pt-2 text-[11px] text-ink/60">

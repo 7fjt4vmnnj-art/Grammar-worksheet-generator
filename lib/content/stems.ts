@@ -1,6 +1,7 @@
 /**
- * Paraphrased instruction stems. The canonical prompt stays in the pool,
- * and the item key ignores which paraphrase was chosen.
+ * Alternate wordings for pattern instructions.
+ * Worksheets do not print these above each question. The section directions
+ * state a shared task once, and a repeated task prompt is shown once for its group.
  */
 const STEMS: Record<string, readonly string[]> = {
   "noun-proper": ["Choose the proper noun.", "Which choice is a proper noun?"],

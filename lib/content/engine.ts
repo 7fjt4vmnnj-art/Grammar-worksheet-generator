@@ -1,6 +1,5 @@
 import { answerLineCount, type Difficulty, type ItemType } from "../types";
 import { Rng } from "../rng";
-import { stemsFor } from "./stems";
 
 export const BAND = {
   all: ["developing", "proficient", "advanced"] as Difficulty[],
@@ -45,13 +44,6 @@ const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function clean(value: string | undefined): string | undefined {
   if (value === undefined) return undefined;
   return value.trim();
-}
-
-/** Pick a paraphrased instruction. Item-specific prompts are left alone by the caller. */
-function chooseStem(rng: Rng, id: string, canonical: string): string {
-  const extras = stemsFor(id).filter((stem) => stem.trim() && stem.trim() !== canonical);
-  if (extras.length === 0) return canonical;
-  return rng.pick([canonical, ...extras]);
 }
 
 function defaultLines(type: ItemType): number {
@@ -102,16 +94,16 @@ export function pattern(opts: {
         const message = error instanceof Error ? error.message : String(error);
         throw new Error(`Pattern ${opts.id}: ${message}`);
       }
-      const canonical = clean(core.prompt ?? opts.prompt) ?? opts.prompt;
-      const prompt = clean(core.prompt ? canonical : chooseStem(rng, opts.id, canonical)) ?? canonical;
+      // Keep the pattern instruction as written. A shared task is printed once for the
+      // section, not paraphrased above every item. Item-specific prompts still come through core.prompt.
+      const prompt = clean(core.prompt ?? opts.prompt) ?? opts.prompt;
       const stimulus = clean(core.stimulus);
       const correct = clean(core.answer);
       const explanation = clean(core.explanation);
       if (!prompt) throw new Error(`Pattern ${opts.id} produced an empty prompt`);
       if (!correct) throw new Error(`Pattern ${opts.id} produced an empty answer`);
       const lines = answerLineCount(opts.type, core.lines ?? opts.lines ?? defaultLines(opts.type));
-      // The key uses the canonical stem so a paraphrase does not count as a new question.
-      const key = core.key ?? `${opts.id}|${stimulus ?? ""}|${canonical}|${correct}`;
+      const key = core.key ?? `${opts.id}|${stimulus ?? ""}|${prompt}|${correct}`;
       if (opts.type === "multiple-choice") {
         const built = multipleChoice(rng, correct, core.distractors, core.choices);
         return {

@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { PDFDocument } from "pdf-lib";
-import { SKILLS } from "./catalog";
+import { directionsCoverItemPrompts, SKILLS } from "./catalog";
 import { patternsFor } from "./content";
 import { countUniqueItems, generateFromPatterns } from "./content/engine";
 import { fileSlug, generateWorksheet, worksheetItems } from "./generate";
 import { buildPdf } from "./pdf";
 import { Rng } from "./rng";
-import { DIFFICULTIES, type Difficulty, type GenerateInput } from "./types";
+import { DIFFICULTIES, layoutItemPrompts, type Difficulty, type GenerateInput, type ItemPromptLayout } from "./types";
 
 const PLACEHOLDER = /\{[a-zA-Z0-9_]+\}/;
 const STUB = /\b(TODO|lorem ipsum|placeholder|stub item)\b/i;
@@ -108,6 +108,117 @@ describe("active vs. passive voice", () => {
           assert.doesNotMatch(rewrite, / by /);
         }
         assert.ok((item.explanation ?? "").length > 12);
+      }
+    }
+  });
+
+  it("states the voice instruction once in the section, not above every item", () => {
+    assert.equal(directionsCoverItemPrompts("active-passive"), true);
+    const sheet = generateWorksheet(
+      baseInput({
+        grade: 10,
+        difficulty: "proficient",
+        skillIds: ["active-passive"],
+        questionCount: 10,
+        title: "Active vs. passive voice",
+        seed: 7,
+      }),
+    );
+    const section = sheet.sections[0];
+    assert.ok(section);
+    assert.match(section.directions, /opposite voice/i);
+    const prompts = section.items.map((item) => item.prompt);
+    assert.equal(new Set(prompts).size, 1);
+    const shown = layoutItemPrompts(section.items, true, true);
+    assert.ok(shown.every((layout) => layout.prompt === "" && layout.groupPrompt === ""));
+    const withoutDirections = layoutItemPrompts(section.items, false, true);
+    assert.equal(withoutDirections[0]?.groupPrompt, prompts[0]);
+    assert.ok(withoutDirections.slice(1).every((layout) => layout.prompt === "" && layout.groupPrompt === ""));
+    for (const item of section.items) {
+      assert.equal(item.lines, 1);
+      assert.equal(item.choices, undefined);
+      assert.match(item.answer, /^(Active|Passive)\. .+/);
+    }
+  });
+});
+
+describe("instruction layout", () => {
+  it("prints a repeated task once and keeps a one-off prompt on its item", () => {
+    const laid = layoutItemPrompts(
+      [
+        { prompt: "Rewrite the run-on as two sentences.", stimulus: "The bell rang the hall filled." },
+        { prompt: "Rewrite the run-on as two sentences.", stimulus: "The paint peeled the mural faded." },
+        {
+          prompt: "Rewrite the run-on using a semicolon and no coordinating conjunction.",
+          stimulus: "The solo ended the applause started.",
+        },
+      ],
+      true,
+      false,
+    );
+    assert.deepEqual(laid, [
+      { prompt: "", groupPrompt: "Rewrite the run-on as two sentences." },
+      { prompt: "", groupPrompt: "" },
+      { prompt: "Rewrite the run-on using a semicolon and no coordinating conjunction.", groupPrompt: "" },
+    ] satisfies ItemPromptLayout[]);
+    const questions = layoutItemPrompts(
+      [
+        { prompt: "Which sentence is a comma splice?" },
+        { prompt: "Which sentence is a comma splice?" },
+      ],
+      true,
+      false,
+    );
+    assert.deepEqual(questions, [
+      { prompt: "Which sentence is a comma splice?", groupPrompt: "" },
+      { prompt: "Which sentence is a comma splice?", groupPrompt: "" },
+    ]);
+  });
+
+  it("does not repeat a shared instruction on every question", () => {
+    const sheet = generateWorksheet(
+      baseInput({
+        grade: 9,
+        difficulty: "proficient",
+        skillIds: ["run-ons", "combining-sentences", "confused-words"],
+        questionCount: 15,
+        seed: 11,
+      }),
+    );
+    for (const section of sheet.sections) {
+      const laid = layoutItemPrompts(
+        section.items,
+        true,
+        directionsCoverItemPrompts(section.skillId),
+      );
+      assert.equal(laid.length, section.items.length);
+      for (let index = 1; index < section.items.length; index += 1) {
+        const item = section.items[index];
+        const previous = section.items[index - 1];
+        const current = item?.prompt.trim();
+        if (
+          current &&
+          current === previous?.prompt.trim() &&
+          item?.stimulus?.trim() &&
+          previous?.stimulus?.trim()
+        ) {
+          assert.equal(laid[index]?.prompt, "");
+          assert.equal(laid[index]?.groupPrompt, "");
+        }
+      }
+      if (section.skillId === "confused-words") {
+        assert.ok(laid.every((layout) => layout.prompt === "" && layout.groupPrompt === ""));
+        assert.ok(section.items.every((item) => (item.choices?.length ?? 0) >= 2));
+      }
+      if (section.skillId === "combining-sentences") {
+        const shown = laid.filter((layout) => layout.prompt || layout.groupPrompt);
+        assert.ok(shown.length > 0);
+      }
+      if (section.skillId === "run-ons") {
+        section.items.forEach((item, index) => {
+          if (item.type !== "multiple-choice") assert.equal(item.lines, 1);
+          if (!item.stimulus?.trim()) assert.equal(laid[index]?.prompt, item.prompt);
+        });
       }
     }
   });

@@ -241,7 +241,7 @@ export const antecedentPatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the sentence so the pronoun agrees with its antecedent.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const rows = [
         ["The dogs wagged its tails when the door opened.", "The dogs wagged their tails when the door opened.", "Dogs is plural, so use their."],
@@ -426,42 +426,23 @@ const VOICE = [
   ["posted the roster before lunch", "The roster was posted before lunch by"],
 ] as const;
 
+const VOICE_PROMPT =
+  "Identify whether the sentence is active or passive, then rewrite it in the opposite voice. Keep the same tense.";
+
 export const voicePatterns: Pattern[] = [
-  pattern({
-    id: "voice-identify",
-    difficulties: BAND.all,
-    type: "multiple-choice",
-    prompt: "Is the sentence in active voice or passive voice?",
-    build: (rng) => {
-      const name = rng.pick(NAMES);
-      const [activeVerb, passiveStart] = rng.pick(VOICE);
-      const active = `${name} ${activeVerb}.`;
-      const passive = `${passiveStart} ${name}.`;
-      const usePassive = rng.next() < 0.5;
-      return {
-        stimulus: usePassive ? passive : active,
-        answer: usePassive ? "passive" : "active",
-        choices: ["active", "passive"],
-        explanation: usePassive
-          ? `The subject receives the action, and the doer appears in a by-phrase, so the voice is passive.`
-          : `${name} performs the action, so the voice is active.`,
-        key: usePassive ? passive : active,
-      };
-    },
-  }),
   pattern({
     id: "voice-to-passive",
     difficulties: BAND.all,
     type: "rewrite",
-    prompt: "Rewrite the sentence in the passive voice. Keep the same tense.",
-    lines: 2,
+    prompt: VOICE_PROMPT,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const [activeVerb, passiveStart] = rng.pick(VOICE);
       return {
         stimulus: `${name} ${activeVerb}.`,
-        answer: `${passiveStart} ${name}.`,
-        explanation: `The original object becomes the subject, and ${name} moves into a by-phrase. The tense stays past.`,
+        answer: `Active. ${passiveStart} ${name}.`,
+        explanation: `${name} performs the action, so the sentence is active. The opposite voice makes the object the subject and moves ${name} into a by-phrase. The tense stays past.`,
         key: `${name}|${activeVerb}|passive`,
       };
     },
@@ -470,27 +451,19 @@ export const voicePatterns: Pattern[] = [
     id: "voice-to-active",
     difficulties: BAND.all,
     type: "rewrite",
-    prompt: "Rewrite the sentence in the active voice. Keep the same tense.",
-    lines: 2,
+    prompt: VOICE_PROMPT,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const [activeVerb, passiveStart] = rng.pick(VOICE);
       return {
         stimulus: `${passiveStart} ${name}.`,
-        answer: `${name} ${activeVerb}.`,
-        explanation: `${name} is the doer, so ${name} becomes the subject of the active sentence.`,
+        answer: `Passive. ${name} ${activeVerb}.`,
+        explanation: `The subject receives the action and ${name} appears in a by-phrase, so the sentence is passive. The opposite voice makes ${name} the subject. The tense stays past.`,
         key: `${name}|${activeVerb}|active`,
       };
     },
   }),
-  choicePattern("voice-choice", BAND.adv, "Which sentence is the better choice for the situation?", [
-    { stimulus: "The writer does not know who cracked the beaker. Which sentence fits?", answer: "The beaker was cracked during second period.", distractors: ["Someone cracked the beaker during second period.", "The beaker cracked someone during second period.", "Cracking the beaker was during second period."], explanation: "Passive voice is useful when the doer is unknown. The active sentence has to invent a vague someone." },
-    { stimulus: "The writer wants to emphasize Maya, who found the key. Which sentence fits?", answer: "Maya found the missing key.", distractors: ["The missing key was found by Maya.", "The missing key was found.", "Found by Maya the key was."], explanation: "Active voice puts the doer, Maya, in the subject position." },
-    { stimulus: "The writer wants to emphasize the mural rather than the painter. Which sentence fits?", answer: "The mural was painted over the weekend.", distractors: ["Jordan painted the mural over the weekend.", "The mural painted Jordan over the weekend.", "Painting was the mural."], explanation: "Passive voice makes the mural the subject." },
-    { stimulus: "The lab report should sound direct and name the researchers. Which sentence fits?", answer: "The researchers heated the solution to 60 degrees.", distractors: ["The solution was heated to 60 degrees by the researchers.", "The solution was heated.", "Heated the solution the researchers."], explanation: "When the doer matters, active voice is more direct." },
-    { stimulus: "A process description should focus on the steps, not on who did them. Which sentence fits?", answer: "The solution is heated to 60 degrees.", distractors: ["We heat the solution to 60 degrees.", "The solution heats us to 60 degrees.", "Heating we the solution."], explanation: "Passive voice keeps the focus on the solution and the step." },
-    { stimulus: "The writer knows the agent and wants a strong subject. Which sentence fits?", answer: "The jury reached a verdict.", distractors: ["A verdict was reached by the jury.", "A verdict reached the jury.", "Reached a verdict was."], explanation: "Active voice gives the sentence a clear, strong subject." },
-  ]),
 ];
 
 export const parallelPatterns: Pattern[] = [
@@ -499,7 +472,7 @@ export const parallelPatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the sentence so the items in the series are parallel.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const rows = [

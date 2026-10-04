@@ -225,7 +225,7 @@ export const pronounPatterns: Pattern[] = [
     difficulties: BAND.all,
     type: "rewrite",
     prompt: "Rewrite the second sentence, replacing the repeated noun with a personal pronoun.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const rows = [
         ["The beakers are clean.", "Please return the beakers to the cart.", "Please return them to the cart.", "Beakers is plural, so the object pronoun is them."],
@@ -679,7 +679,7 @@ export const interjectionPatterns: Pattern[] = [
     difficulties: BAND.upper,
     type: "rewrite",
     prompt: "Rewrite the sentence, punctuating the interjection correctly.",
-    lines: 2,
+    lines: 1,
     build: (rng) => {
       const name = rng.pick(NAMES);
       const rows = [

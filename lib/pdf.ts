@@ -6,7 +6,7 @@ import {
   rgb,
   type RGB,
 } from "pdf-lib";
-import type { Worksheet, WorksheetItem } from "./types";
+import { answerLineCount, type Worksheet, type WorksheetItem } from "./types";
 import { DIFFICULTY_LABEL } from "./types";
 import { parseRich, type RichSpan, type RichStyle } from "./rich";
 
@@ -16,6 +16,12 @@ const MARGIN_X = 54;
 const TOP = 46;
 const BOTTOM = 54;
 const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_X * 2;
+const WRITE_IN_LEAD = 28;
+const WRITE_IN_TRAIL = 6;
+const WORKSHEET_ITEM_GAP = 18;
+const ANSWER_KEY_ITEM_GAP = 8;
+const WORKSHEET_PROMPT_GAP = 8;
+const ANSWER_KEY_PROMPT_GAP = 4;
 
 const INK = rgb(0.11, 0.1, 0.08);
 const MUTED = rgb(0.34, 0.31, 0.27);
@@ -70,9 +76,11 @@ export async function buildPdf(worksheet: Worksheet, kind: Kind): Promise<Uint8A
     }
     section.items.forEach((item, index) => {
       const previous = section.items[index - 1];
-      if (previous && previous.prompt !== item.prompt) pen.cursor -= 4;
+      const promptGap = pen.kind === "worksheet" ? WORKSHEET_PROMPT_GAP : ANSWER_KEY_PROMPT_GAP;
+      const itemGap = pen.kind === "worksheet" ? WORKSHEET_ITEM_GAP : ANSWER_KEY_ITEM_GAP;
+      if (previous && previous.prompt !== item.prompt) pen.cursor -= promptGap;
       drawItem(pen, item);
-      pen.cursor -= 8;
+      pen.cursor -= itemGap;
     });
     pen.cursor -= 6;
   }
@@ -200,7 +208,10 @@ function drawItem(pen: Pen, item: WorksheetItem) {
     pen.kind === "answer-key" && item.explanation
       ? wrapRich(parseRich(item.explanation), pen.fonts, 9, CONTENT_WIDTH - 22)
       : [];
-  const blankHeight = pen.kind === "worksheet" ? item.lines * 18 : 0;
+  const blankHeight =
+    pen.kind === "worksheet" && answerLineCount(item.type, item.lines) > 0
+      ? WRITE_IN_LEAD + WRITE_IN_TRAIL
+      : 0;
   const height =
     promptLines.length * 15 +
     (stimulusLines.length ? stimulusLines.length * 15 + 3 : 0) +
@@ -234,22 +245,20 @@ function drawItem(pen: Pen, item: WorksheetItem) {
     });
     drawRich(pen, lines, MARGIN_X + 40, 11, INK);
   });
-  if (pen.kind === "worksheet") {
-    for (let line = 0; line < item.lines; line += 1) {
-      ensure(pen, 18);
-      pen.cursor -= 16;
-      pen.page.drawLine({
-        start: { x: MARGIN_X + 22, y: pen.cursor },
-        end: { x: PAGE_WIDTH - MARGIN_X, y: pen.cursor },
-        thickness: 0.6,
-        color: RULE,
-      });
-      pen.cursor -= 2;
-    }
-  } else {
+  if (pen.kind === "answer-key") {
     pen.cursor -= 1;
     drawRich(pen, answerLines, MARGIN_X + 22, 11, GREEN);
     if (explanationLines.length) drawRich(pen, explanationLines, MARGIN_X + 22, 9, MUTED);
+  } else if (answerLineCount(item.type, item.lines) > 0) {
+    ensure(pen, WRITE_IN_LEAD + WRITE_IN_TRAIL);
+    pen.cursor -= WRITE_IN_LEAD;
+    pen.page.drawLine({
+      start: { x: MARGIN_X + 22, y: pen.cursor },
+      end: { x: PAGE_WIDTH - MARGIN_X, y: pen.cursor },
+      thickness: 0.6,
+      color: RULE,
+    });
+    pen.cursor -= WRITE_IN_TRAIL;
   }
 }
 

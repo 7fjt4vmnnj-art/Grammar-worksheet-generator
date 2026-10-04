@@ -1,4 +1,4 @@
-import type { Difficulty, ItemType } from "../types";
+import { answerLineCount, type Difficulty, type ItemType } from "../types";
 import { Rng } from "../rng";
 import { stemsFor } from "./stems";
 
@@ -55,17 +55,7 @@ function chooseStem(rng: Rng, id: string, canonical: string): string {
 }
 
 function defaultLines(type: ItemType): number {
-  switch (type) {
-    case "multiple-choice":
-      return 0;
-    case "identify":
-    case "fill-in":
-      return 1;
-    case "rewrite":
-      return 2;
-    case "edit":
-      return 4;
-  }
+  return type === "multiple-choice" ? 0 : 1;
 }
 
 function multipleChoice(
@@ -119,7 +109,7 @@ export function pattern(opts: {
       const explanation = clean(core.explanation);
       if (!prompt) throw new Error(`Pattern ${opts.id} produced an empty prompt`);
       if (!correct) throw new Error(`Pattern ${opts.id} produced an empty answer`);
-      const lines = core.lines ?? opts.lines ?? defaultLines(opts.type);
+      const lines = answerLineCount(opts.type, core.lines ?? opts.lines ?? defaultLines(opts.type));
       // The key uses the canonical stem so a paraphrase does not count as a new question.
       const key = core.key ?? `${opts.id}|${stimulus ?? ""}|${canonical}|${correct}`;
       if (opts.type === "multiple-choice") {

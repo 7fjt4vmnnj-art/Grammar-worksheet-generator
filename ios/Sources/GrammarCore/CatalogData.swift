@@ -123,8 +123,8 @@ extension Catalog {
             id: "active-passive",
             name: "Active vs. passive voice",
             category: .agreement,
-            summary: "Recognizing voice and rewriting a sentence in the voice requested.",
-            directions: "Identify active and passive voice, and rewrite a sentence in the voice the item requests. Keep the tense the same.",
+            summary: "Identifying whether a sentence is active or passive, then rewriting it in the opposite voice.",
+            directions: "Identify whether each sentence is active or passive, then rewrite it in the opposite voice. Keep the tense the same.",
             gradeBands: [.grades9to10, .grades11to12],
             keywords: ["voice", "agent", "by"]
         ),

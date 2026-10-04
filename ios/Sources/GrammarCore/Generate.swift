@@ -154,7 +154,7 @@ public func generateWorksheet(_ input: GenerateInput) throws -> Worksheet {
                 prompt: item.prompt,
                 stimulus: item.stimulus,
                 choices: item.choices,
-                lines: item.lines,
+                lines: answerLineCount(type: item.type, lines: item.lines),
                 answer: item.answer,
                 explanation: item.explanation
             )

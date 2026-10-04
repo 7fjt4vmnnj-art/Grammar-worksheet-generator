@@ -70,6 +70,12 @@ private final class PDFMaker {
     let marginX: CGFloat = 54
     let top: CGFloat = 46
     let bottom: CGFloat = 54
+    let writeInLead: CGFloat = 28
+    let writeInTrail: CGFloat = 6
+    let worksheetItemGap: CGFloat = 18
+    let answerKeyItemGap: CGFloat = 8
+    let worksheetPromptGap: CGFloat = 8
+    let answerKeyPromptGap: CGFloat = 4
 
     var contentWidth: CGFloat { pageWidth - marginX * 2 }
 
@@ -125,13 +131,15 @@ extension PDFMaker {
                 cursor += 8
             }
             var previousPrompt: String?
+            let promptGap = kind == .worksheet ? worksheetPromptGap : answerKeyPromptGap
+            let itemGap = kind == .worksheet ? worksheetItemGap : answerKeyItemGap
             for item in section.items {
                 if let previousPrompt, previousPrompt != item.prompt {
-                    cursor += 4
+                    cursor += promptGap
                 }
                 previousPrompt = item.prompt
                 drawItem(item)
-                cursor += 8
+                cursor += itemGap
             }
             cursor += 6
         }
@@ -268,19 +276,17 @@ extension PDFMaker {
             emit("\(letter).", x: marginX + 22, top: cursor, font: times(.bold, 11), color: ink)
             drawRich(lines, x: marginX + 40, size: 11, color: ink)
         }
-        if kind == .worksheet {
-            for _ in 0..<item.lines {
-                ensure(18)
-                cursor += 16
-                ruleLine(y: cursor, x1: marginX + 22, x2: pageWidth - marginX, thickness: 0.6, color: rule)
-                cursor += 2
-            }
-        } else {
+        if kind == .answerKey {
             cursor += 1
             drawRich(answerLines, x: marginX + 22, size: 11, color: accent)
             if !explanationLines.isEmpty {
                 drawRich(explanationLines, x: marginX + 22, size: 9, color: muted)
             }
+        } else if answerLineCount(type: item.type, lines: item.lines) > 0 {
+            ensure(writeInLead + writeInTrail)
+            cursor += writeInLead
+            ruleLine(y: cursor, x1: marginX + 22, x2: pageWidth - marginX, thickness: 0.6, color: rule)
+            cursor += writeInTrail
         }
     }
 

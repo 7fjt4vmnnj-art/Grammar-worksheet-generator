@@ -84,6 +84,12 @@ public enum ItemType: String, Codable, Hashable, Sendable {
     case edit
 }
 
+/// Written responses get one ruled line. Choice items stay at zero.
+public func answerLineCount(type: ItemType, lines: Int) -> Int {
+    if type == .multipleChoice || lines <= 0 { return 0 }
+    return 1
+}
+
 public enum DocumentKind: String, Codable, Hashable, Sendable {
     case worksheet
     case answerKey = "answer-key"

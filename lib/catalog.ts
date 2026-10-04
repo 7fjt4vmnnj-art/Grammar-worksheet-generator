@@ -156,9 +156,9 @@ export const SKILLS: Skill[] = [
     id: "active-passive",
     name: "Active vs. passive voice",
     category: "agreement",
-    summary: "Recognizing voice and rewriting a sentence in the voice requested.",
+    summary: "Identifying whether a sentence is active or passive, then rewriting it in the opposite voice.",
     directions:
-      "Identify active and passive voice, and rewrite a sentence in the voice the item requests. Keep the tense the same.",
+      "Identify whether each sentence is active or passive, then rewrite it in the opposite voice. Keep the tense the same.",
     gradeBands: ["9-10", "11-12"],
     keywords: ["voice", "agent", "by"],
   },

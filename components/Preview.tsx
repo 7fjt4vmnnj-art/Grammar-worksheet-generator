@@ -1,4 +1,4 @@
-import type { Worksheet } from "@/lib/types";
+import { answerLineCount, type Worksheet } from "@/lib/types";
 import { DIFFICULTY_LABEL } from "@/lib/types";
 import { parseRich, type RichSpan } from "@/lib/rich";
 
@@ -70,7 +70,7 @@ export default function Preview({
               {section.directions}
             </p>
           ) : null}
-          <ol className="mt-4 space-y-5">
+          <ol className={answerKey ? "mt-4 space-y-5" : "mt-4 space-y-8"}>
             {section.items.map((item) => (
               <li key={item.number} className="grid grid-cols-[2rem_1fr] gap-2">
                 <span className="font-serif font-semibold">{item.number}.</span>
@@ -95,12 +95,8 @@ export default function Preview({
                       ))}
                     </ul>
                   ) : null}
-                  {!answerKey && item.lines > 0 ? (
-                    <div className="mt-2">
-                      {Array.from({ length: item.lines }, (_, line) => (
-                        <div key={line} className="paper-rule" />
-                      ))}
-                    </div>
+                  {!answerKey && answerLineCount(item.type, item.lines) > 0 ? (
+                    <div className="paper-rule" />
                   ) : null}
                   {answerKey ? (
                     <div className="mt-1">
